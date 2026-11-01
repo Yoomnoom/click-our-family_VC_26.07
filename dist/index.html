@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#ef6558" />
+  <title>찰칵! 우리 가족</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Noto+Sans+KR:wght@500;700;900&display=swap');
+    :root{--ink:#362b2b;--red:#ef6558;--yellow:#ffd76c;--cream:#fff9ea;--green:#73a887;--blue:#6d94c6}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;background:#221c1d;font-family:'Noto Sans KR',sans-serif;color:var(--ink)}
+    button{font:inherit;color:inherit}
+    #app{width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle at 50% 20%,#584342,#241d1e 72%)}
+    .game-shell{position:relative;width:min(100vw,177.78vh);height:min(100vh,56.25vw);min-height:320px;overflow:hidden;background:var(--cream);box-shadow:0 22px 80px #0009;isolation:isolate}
+    .screen{position:absolute;inset:0;display:none}.screen.active{display:flex}
+    /* ===== 타이틀 ===== */
+    .title-screen{align-items:center;justify-content:center;background:#f9ebc7;overflow:hidden}
+    .title-screen:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#d7726250 1.5px,transparent 1.5px);background-size:22px 22px;opacity:.55}
+    .album{position:relative;width:min(72%,900px);height:78%;background:#cf5e50;border-radius:18px 42px 42px 18px;box-shadow:18px 20px 0 #8f3f39,0 32px 70px #6a372f66;transform:rotate(-2deg);display:flex;align-items:center;justify-content:center;border:6px solid #e77b68}
+    .album:before{content:"";position:absolute;left:26px;top:0;bottom:0;width:12px;background:repeating-linear-gradient(#6f2e2b 0 16px,#f0a18f 16px 28px);opacity:.8}
+    .cover-card{width:74%;height:74%;background:#fff7df;border:11px solid #f8d28a;box-shadow:0 0 0 4px #963d36;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3%;transform:rotate(1.5deg)}
+    .camera-mark{font-size:clamp(38px,6vh,80px);filter:drop-shadow(4px 5px 0 #e6b851)}
+    h1{font-family:'Gaegu',cursive;font-size:clamp(42px,8vh,104px);line-height:.9;margin:.05em 0;color:#d84d44;letter-spacing:-.06em;text-shadow:4px 5px 0 #ffd974}h1 span{display:block;white-space:nowrap}
+    .subtitle{font-size:clamp(12px,2vh,24px);font-weight:900;letter-spacing:.02em;margin:12px 0 18px;word-break:keep-all}
+    .start-btn,.next-btn{border:0;border-radius:999px;background:var(--red);color:white;font-weight:900;font-size:clamp(15px,2.3vh,26px);padding:.7em 2em;box-shadow:0 7px 0 #a93d37;cursor:pointer;transition:.15s transform}.start-btn:active,.next-btn:active{transform:translateY(5px);box-shadow:0 2px 0 #a93d37}
+    .difficulty{display:flex;gap:7px;margin:0 0 16px;justify-content:center}.difficulty button{border:2px solid #d5aa59;background:#fff5cd;border-radius:14px;padding:7px 10px;font-weight:900;font-size:clamp(10px,1.5vh,15px);cursor:pointer;box-shadow:0 3px 0 #bf8d3e}.difficulty button.selected{background:#493735;color:#fff;border-color:#493735;transform:translateY(2px);box-shadow:0 1px 0 #2d2221}.difficulty button small{display:block;font-size:.68em;font-weight:700;opacity:.8;margin-top:2px}
+    .title-sub{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center}.title-sub button,.title-sub span{border:2px solid #d5aa59;background:#fff5cd;border-radius:999px;padding:5px 12px;font-weight:900;font-size:clamp(10px,1.5vh,14px);cursor:pointer}.title-sub span.locked{opacity:.55;border-style:dashed;cursor:default;background:#efe3bd}
+    .how{position:absolute;bottom:3%;font-size:clamp(10px,1.45vh,17px);font-weight:700;color:#744f49;word-break:keep-all}
+    /* ===== 게임 ===== */
+    .game-screen{flex-direction:column;background:#f3e6cb}
+    .hud{height:12%;min-height:48px;background:#fff8e9;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 3%;border-bottom:4px solid #c98663;z-index:20;box-shadow:0 4px 0 #5d413a25}
+    .hud-left{display:flex;align-items:center;gap:4px;font-size:clamp(12px,1.9vh,21px);font-weight:900}
+    .best-label{font-size:clamp(12px,1.9vh,21px);font-weight:900;text-align:right}.best-label b{font-size:1.35em;color:#d85047}
+    .gallery-btn{border:0;background:#ffe18a;border-radius:999px;padding:5px 12px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #c29a42}
+    .level-badge{display:inline-block;background:#493735;color:#fff;border-radius:999px;padding:4px 9px;margin-right:3px;font-size:.75em;white-space:nowrap}
+    .timer{position:relative;width:clamp(62px,9vh,100px);aspect-ratio:1;border-radius:50%;background:#fff;border:6px solid var(--red);display:grid;place-items:center;font-size:clamp(23px,4vh,45px);font-weight:900;box-shadow:0 4px 0 #b4443e;transform:translateY(8%)}
+    .timer.danger{animation:pulse .45s infinite alternate;background:#fff0a8}@keyframes pulse{to{transform:translateY(8%) scale(1.08)}}
+    .stage{position:relative;flex:1;overflow:hidden;touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none;background:url('assets/poses/living-room2.png') center/cover no-repeat}
+    /* 인물 컨테이너: 509×556 캔버스 비율 고정. 모든 포즈가 같은 캔버스를 쓰므로 크기 보정 CSS 불필요 */
+    .family-member{position:absolute;height:58%;aspect-ratio:509/556;bottom:2%;transform:translateX(-50%);transform-origin:50% 100%;pointer-events:none;z-index:10;transition:left var(--mv,.45s) cubic-bezier(.2,.8,.3,1),bottom var(--mv,.45s) cubic-bezier(.2,.8,.3,1)}
+    .family-member.dragging{z-index:50;transition:none}.family-member.instant{transition:none}
+    .pose-wrap{position:absolute;inset:0;transform-origin:50% 100%;transform:scale(var(--depth-scale,1));transition:transform .45s}.pose-wrap:before{content:"";position:absolute;left:28%;right:28%;bottom:1.5%;height:3.6%;border-radius:50%;background:radial-gradient(#3b2a2262,#3b2a2200 72%)}
+    .family-member.dragging .pose-wrap,.family-member.instant .pose-wrap{transition:none}
+    .pose-pop{position:absolute;inset:0;transform-origin:50% 100%}.pose-pop.popping{animation:pose-pop .12s ease-out}@keyframes pose-pop{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+    .char-img{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 4px 2px #4a332c3d);pointer-events:none}.family-member.dragging .char-img{filter:drop-shadow(0 13px 6px #49362855)}
+    .hit{position:absolute;pointer-events:auto;touch-action:none;cursor:grab}.family-member.dragging .hit{cursor:grabbing}.family-member.locked-member .hit{cursor:not-allowed}
+    .family-member:after{content:attr(data-gag);position:absolute;left:50%;top:calc(var(--bt,8)*1%);transform:translate(-50%,-100%);white-space:nowrap;background:#fff7dc;border:3px solid #4e3933;border-radius:18px;padding:3px 9px;font-weight:900;font-size:clamp(9px,1.5vh,15px);opacity:0;transition:.15s;z-index:5;pointer-events:none}.family-member[data-gag]:after{opacity:1}
+    .cond-bar{position:absolute;left:3%;right:3%;top:2%;display:flex;gap:6px;z-index:15;pointer-events:none}
+    .cond{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:#fff9e9ee;border:3px solid #8f5544;border-radius:14px;padding:5px 8px;box-shadow:0 4px 0 #7b4a3c55;font-weight:900;font-size:clamp(10px,1.7vh,17px);word-break:keep-all;line-height:1.2}
+    .cond i{flex:none;width:1.6em;height:1.6em;border-radius:50%;border:3px solid #b98c7a;display:grid;place-items:center;font-style:normal;color:transparent;font-size:.9em}
+    .cond.ok{background:#e8f8dcf2;border-color:#4f9a62}.cond.ok i{background:#4f9a62;border-color:#4f9a62;color:#fff}.cond.pop{animation:cond-pop .45s}
+    @keyframes cond-pop{0%{transform:scale(1)}35%{transform:scale(1.12) rotate(-1.5deg)}70%{transform:scale(.97)}100%{transform:scale(1)}}
+    .big-count{position:absolute;left:50%;top:17%;transform:translateX(-50%);z-index:16;pointer-events:none;font-family:'Gaegu',cursive;font-weight:900;font-size:clamp(90px,17vh,170px);line-height:1;color:#fff;-webkit-text-stroke:6px #d84d44;paint-order:stroke fill;text-shadow:0 8px 0 #7b2d27aa;opacity:0}
+    .big-count.show{opacity:.82;animation:count-pop .5s ease-out}@keyframes count-pop{0%{transform:translateX(-50%) scale(1.6);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:.82}}
+    .coach{position:absolute;left:42%;bottom:3%;transform:translateX(-50%);z-index:14;pointer-events:none;background:#392e2de0;color:#fff;border-radius:999px;padding:8px 16px;font-weight:900;font-size:clamp(11px,1.8vh,18px);white-space:nowrap;display:none;word-break:keep-all}.coach.show{display:block;animation:coach-bob 1.1s ease-in-out infinite alternate}@keyframes coach-bob{to{transform:translateX(-50%) translateY(-6px)}}
+    .photo-pet{position:absolute;display:none;width:26%;height:16%;object-fit:contain;object-position:center bottom;left:-18%;bottom:14%;transform:translateX(-50%);z-index:55;pointer-events:none;filter:drop-shadow(0 4px 2px #432b2344)}
+    .shutter{--heat:0;position:absolute;right:3%;bottom:4%;z-index:30;width:clamp(66px,11vh,116px);aspect-ratio:1;border-radius:50%;border:8px solid color-mix(in srgb,#fff calc((1 - var(--heat))*100%),#e5122d);background:var(--red);box-shadow:0 0 0 5px #633f38,0 8px 0 #3c2f2b,0 0 calc(var(--heat)*26px) calc(var(--heat)*8px) #e5122d99;cursor:pointer;display:grid;place-items:center;color:white;font-size:clamp(26px,4.5vh,54px);touch-action:manipulation}.shutter:active{transform:translateY(6px);box-shadow:0 0 0 5px #633f38,0 2px 0 #3c2f2b}
+    .flash{position:absolute;inset:0;background:white;z-index:100;pointer-events:none;opacity:0}.flash.fire{animation:flash .42s}@keyframes flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+    .toast{position:absolute;left:50%;top:15%;transform:translate(-50%,-20px);background:#392e2dd9;color:white;border-radius:999px;padding:9px 18px;font-weight:900;font-size:clamp(11px,1.8vh,19px);z-index:40;opacity:0;transition:.2s;white-space:nowrap;pointer-events:none;word-break:keep-all}.toast.show{opacity:1;transform:translate(-50%,0)}.toast.hot{background:#d84d44}
+    .mission-intro{position:absolute;inset:0;z-index:110;background:#2b2222b8;display:none;place-items:center;padding:5%}.mission-intro.show{display:grid}.mission-card{width:min(540px,90%);background:#fff9e9;border:6px solid var(--red);border-radius:24px;padding:5%;text-align:center;box-shadow:0 16px 0 #7b3f39}
+    .mission-kicker{font-weight:900;color:#9b6255;font-size:clamp(11px,1.7vh,16px)}.mission-card h3{font-family:'Gaegu';font-size:clamp(32px,5.5vh,58px);line-height:1;margin:8px 0;color:#d94f47;word-break:keep-all}
+    .cond-list{list-style:none;margin:12px 0 10px;padding:0;display:grid;gap:8px}.cond-list li{background:#ffe9a8;border-radius:14px;padding:10px 14px;font-weight:900;word-break:keep-all;font-size:clamp(14px,2vh,20px)}.cond-list li b{color:#d94f47;margin-right:6px}
+    .mission-tip{font-size:.8em;font-weight:800;margin:0 0 16px;color:#76584e;word-break:keep-all;text-wrap:balance}
+    /* ===== 결과 ===== */
+    .result-screen{align-items:flex-start;justify-content:center;background:#292121;padding:2vh 3vw;overflow-y:auto}
+    .result-wrap{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:1.4vh}
+    .photo{--r:.5;--ph:52vh;position:relative;background:#f9f1d9;padding:10px 10px 38px;transform:rotate(-1.2deg);box-shadow:0 20px 45px #0008;flex:none}
+    .photo.shake{animation:photo-shake .5s}@keyframes photo-shake{0%,100%{transform:rotate(-1.2deg)}15%{transform:rotate(1.4deg) translate(4px,-3px)}35%{transform:rotate(-2.4deg) translate(-5px,3px)}55%{transform:rotate(.8deg) translate(3px,2px)}75%{transform:rotate(-1.8deg)}}
+    .photo-scene{position:relative;overflow:hidden;background:url('assets/poses/living-room2.png') center/cover no-repeat;height:var(--ph);aspect-ratio:var(--r);width:auto;max-width:100%}
+    .photo-scene.develop{animation:develop .9s ease-out both}
+    @keyframes develop{0%{clip-path:inset(0 0 100% 0);filter:blur(12px) sepia(1) brightness(1.6)}55%{clip-path:inset(0 0 0 0);filter:blur(5px) sepia(.7) brightness(1.25)}100%{clip-path:inset(0);filter:none}}
+    .mini-image{position:absolute;bottom:1%;left:50%;width:19%;height:72%;object-fit:contain;object-position:center bottom;transform:translateX(-50%);transform-origin:50% 100%;filter:drop-shadow(0 4px 2px #432b2344)}
+    .mini-image.faithful-image{object-fit:contain;object-position:center bottom;transform:translateX(-50%)!important;max-width:none!important;margin:0!important;animation:none!important}
+    .photo-caption{position:absolute;left:50%;top:3%;transform:translateX(-50%) rotate(-2deg);background:#fff47d;color:#49302b;border:3px solid #49302b;border-radius:12px;padding:4px 12px;font-family:'Gaegu',cursive;font-size:clamp(15px,2.6vh,28px);font-weight:900;text-align:center;line-height:1.1;width:max-content;max-width:90%;word-break:keep-all;text-wrap:balance;z-index:80}
+    .result-screen .photo-caption{opacity:0}.result-screen .photo-caption.in{animation:cap-in .45s cubic-bezier(.2,1.5,.4,1) forwards}@keyframes cap-in{0%{opacity:0;transform:translateX(-50%) rotate(-2deg) scale(.4)}100%{opacity:1;transform:translateX(-50%) rotate(-2deg) scale(1)}}
+    .date-stamp{position:absolute;right:5%;bottom:2.4%;font-family:monospace;color:#d65b46;font-weight:900;font-size:clamp(10px,1.6vh,17px)}
+    .stamp{position:absolute;left:50%;top:30%;z-index:90;width:max-content;white-space:normal;text-align:center;max-width:92%;word-break:keep-all;transform:translate(-50%,-50%) rotate(-12deg);padding:6px 16px;border:6px solid currentColor;border-radius:14px;font-family:'Gaegu',cursive;font-weight:900;font-size:clamp(28px,5vh,52px);line-height:1;opacity:0;pointer-events:none;background:#fff8e5cc;letter-spacing:-.02em}
+    .stamp.normal{color:#6b7f8f}.stamp.funny{color:#e0932f}.stamp.disaster{color:#d63d34}.stamp.legend{color:#b8860b;background:#fff3b0e6;font-size:clamp(24px,4.4vh,46px)}
+    .stamp.slam{animation:slam .42s cubic-bezier(.2,1.5,.4,1) forwards}.stamp.big.slam{animation:slam-big .6s cubic-bezier(.2,1.4,.4,1) forwards}
+    @keyframes slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(3)}65%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(.92)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
+    @keyframes slam-big{0%{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(4.2)}55%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(.88)}75%{transform:translate(-50%,-50%) rotate(-9deg) scale(1.08)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
+    .result-info{width:100%;color:white;text-align:center;padding-bottom:2vh}
+    .result-comment{min-height:2.6em;font-size:clamp(12px,1.9vh,18px);margin:4px auto 8px;color:#f3d8ca;word-break:keep-all;max-width:92%;font-weight:700}
+    .score-rows{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 auto 6px;max-width:92%}
+    .score-row{background:#3c302d;border-radius:12px;padding:5px 4px}.score-row small{display:block;font-size:clamp(10px,1.5vh,13px);color:#e8c9bb;font-weight:700}.score-row b{font-size:clamp(17px,2.8vh,26px);color:#ffdf71;font-variant-numeric:tabular-nums}
+    .score-total{font-size:clamp(14px,2.2vh,20px);font-weight:900;margin:2px 0 6px;color:#fff}.score-total b{font-size:1.9em;color:#ffdf71;margin-left:6px;font-variant-numeric:tabular-nums}
+    .best-new{color:#ffdf71;font-weight:900;min-height:1.3em;font-size:clamp(12px,1.8vh,16px)}
+    .result-actions{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:4px}.result-actions .row{display:flex;gap:8px;justify-content:center}
+    .next-btn{font-size:clamp(14px,2.1vh,22px)}.sub-btn{background:#755b52;box-shadow:0 6px 0 #3d2e2b;font-size:clamp(12px,1.7vh,16px);padding:.55em 1.2em}.main-btn{padding:.75em 2.6em;font-size:clamp(17px,2.6vh,26px)}
+    /* ===== 앨범 ===== */
+    .gallery-screen{flex-direction:column;background:#f6ead0;padding:2.5%;overflow:auto}.gallery-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.gallery-head h2{font-family:'Gaegu';font-size:clamp(32px,5.5vh,66px);margin:0;color:#d75048}.close-gallery{border:0;background:#3c302d;color:white;border-radius:999px;padding:10px 18px;font-weight:900;cursor:pointer;flex:none}.gallery-copy{margin:0 0 2%;font-weight:700;color:#76584e;word-break:keep-all}
+    .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:1% 1% 5%;align-items:start}
+    .gallery-card{background:white;padding:8px 8px 34px;box-shadow:0 8px 18px #6b4d3a33;transform:rotate(var(--tilt));position:relative}.gallery-card .photo-scene{height:auto;width:100%;aspect-ratio:var(--r)}.gallery-card .photo-caption{font-size:clamp(11px,1.7vh,16px);padding:2px 7px;border-width:2px}
+    .gallery-card footer{position:absolute;left:8px;right:8px;bottom:8px;display:flex;justify-content:space-between;gap:6px;font-size:clamp(9px,1.3vh,13px);font-weight:900;color:#79584d}.gallery-card footer span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gallery-empty{grid-column:1/-1;text-align:center;padding:12%;font-family:'Gaegu';font-size:clamp(25px,4vh,48px);color:#927267}.gallery-count{display:inline-block;background:#ffe18a;border-radius:999px;padding:3px 10px;margin-left:8px;font-family:'Noto Sans KR';font-size:.35em;vertical-align:middle}
+    .gallery-card .album-sticker{position:absolute;right:6px;top:6px;z-index:90;background:#fff47d;border:2px solid #49302b;border-radius:999px;padding:2px 8px;font-size:clamp(9px,1.3vh,13px);font-weight:900;transform:rotate(6deg)}.album-sticker.legend{background:#ffe27a}.album-sticker.disaster{background:#ffb4a8}.album-sticker.normal{background:#e3ecf2}
+    /* 구버전(V1) 앨범 기록 렌더링용 */
+    .photo-scene.effect-shake .mini-image{filter:blur(1.8px) drop-shadow(6px 0 0 #e9685866)}.photo-scene.effect-over{filter:brightness(1.45) contrast(.82) saturate(.75)}.finger-block{position:absolute;width:32%;height:48%;right:-13%;top:-15%;border-radius:48% 52% 60% 42%;background:#c76d58dd;filter:blur(3px);z-index:60;transform:rotate(-20deg)}.effect-stamp{position:absolute;right:3%;bottom:3%;z-index:70;background:#ef6558;color:#fff;border:3px solid #fff;border-radius:10px;padding:3px 8px;font-family:'Gaegu';font-size:clamp(12px,2vh,22px);font-weight:900;transform:rotate(-7deg)}
+    /* ===== 거실 앨범 완성 ===== */
+    .complete-screen{align-items:center;justify-content:center;background:#f9ebc7;padding:5%}.complete-card{width:min(520px,92%);background:#fff7df;border:8px solid #f8d28a;box-shadow:0 0 0 4px #963d36,0 18px 0 #8f3f39;border-radius:20px;padding:8% 6%;text-align:center}.complete-emoji{font-size:clamp(48px,9vh,90px)}.complete-card h2{font-family:'Gaegu';font-size:clamp(40px,7vh,72px);margin:.1em 0;color:#d84d44;line-height:1}.complete-card p{font-weight:800;margin:6px 0 20px;color:#76584e;word-break:keep-all}.complete-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
+    /* 세로 화면(폰·태블릿): 가족 크기를 동일하게 고정 → 조건 판정과 시뮬레이션 기준(SIZE)이 일치 */
+    @media(max-aspect-ratio:1.25/1){.game-shell{width:100vw;height:100vh}.album{width:86%}.gallery-grid{grid-template-columns:repeat(2,1fr)}
+      .family-member{height:58%;bottom:2%}.shutter{width:72px;right:3%;bottom:3%}
+      .photo{--ph:50vh}}
+    @media(max-width:700px) and (orientation:portrait){
+      .game-shell{min-height:0}.title-screen{padding:5vh 5vw}.album{width:90%;height:76%;max-height:680px;border-radius:13px 30px 30px 13px;transform:rotate(-1deg)}.album:before{left:18px;width:8px}.cover-card{width:76%;height:76%;padding:8% 4%;border-width:7px}.camera-mark{font-size:34px}h1{font-size:48px;line-height:.84;letter-spacing:-.08em;margin:2px 0 8px}.subtitle{font-size:14px;line-height:1.3;margin:0 0 10px}.start-btn{font-size:18px;padding:.7em 1.35em}.how{left:8%;right:8%;text-align:center;font-size:11px}
+      .difficulty{gap:4px;margin:0 0 12px}.difficulty button{padding:6px 7px;font-size:10px}.title-sub{margin-top:8px;gap:5px}.title-sub button,.title-sub span{font-size:10px;padding:4px 8px}
+      .hud{height:9%;padding:0 3%}.timer{width:56px;border-width:5px;font-size:24px}.stage{background-position:center}.level-badge{font-size:.7em;padding:3px 7px}.gallery-btn{padding:4px 9px;font-size:12px}
+      .cond{padding:4px 6px;font-size:12px;gap:4px}.toast{font-size:13px;padding:7px 14px;top:14%}.coach{bottom:2%;left:40%;font-size:13px}
+      .result-screen{padding:1.5vh 3vw}.result-comment{font-size:13px;min-height:2.4em}
+      .gallery-screen{padding:5%}.gallery-head{align-items:flex-start}.gallery-head h2{font-size:34px;line-height:.9;max-width:66%}.close-gallery{font-size:12px;padding:8px 11px}.gallery-copy{font-size:12px;margin:10px 0 14px}.gallery-grid{gap:12px}
+    }
+  </style>
+</head>
+<body>
+<main id="app"><section class="game-shell">
+  <section id="title" class="screen title-screen active">
+    <div class="album"><div class="cover-card"><div class="camera-mark">📸</div><h1><span>찰칵!</span><span>우리 가족</span></h1><p class="subtitle">완벽하게 세우고,<br>망하기 직전에 찰칵!</p><div class="difficulty" aria-label="난이도 선택"><button data-difficulty="easy">편안하게<small>사고 늦게</small></button><button class="selected" data-difficulty="normal">보통<small>추천</small></button><button data-difficulty="chaos">대환장<small>사고 폭발</small></button></div><button id="startBtn" class="start-btn">가족사진 찍기</button><div class="title-sub"><button id="titleAlbum" class="open-gallery">가족 앨범</button></div></div></div>
+    <p class="how">거실 앨범 3장 · 생일·소풍은 다음 앨범 준비 중</p>
+  </section>
+  <section id="game" class="screen game-screen">
+    <header class="hud"><div class="hud-left"><span id="levelBadge" class="level-badge">거실 1/3</span><button class="gallery-btn open-gallery">앨범</button><button id="muteBtn" class="gallery-btn" aria-label="소리 켜기/끄기">🔊</button></div><div id="timer" class="timer">📷</div><div class="best-label">최고 <b id="best">0</b></div></header>
+    <div id="stage" class="stage">
+      <div id="condBar" class="cond-bar"></div>
+      <div id="bigCount" class="big-count"></div>
+      <div class="family-member mom" data-id="mom"><div class="pose-wrap"><div class="pose-pop"><img class="char-img" src="assets/poses/mom-p1.png" alt="엄마"></div><div class="hit"></div></div></div>
+      <div class="family-member dad" data-id="dad"><div class="pose-wrap"><div class="pose-pop"><img class="char-img" src="assets/poses/dad-p6.png" alt="아빠"></div><div class="hit"></div></div></div>
+      <div class="family-member sis" data-id="sis"><div class="pose-wrap"><div class="pose-pop"><img class="char-img" src="assets/poses/sis-p4.png" alt="누나"></div><div class="hit"></div></div></div>
+      <div class="family-member bro" data-id="bro"><div class="pose-wrap"><div class="pose-pop"><img class="char-img" src="assets/poses/bro-p6.png" alt="동생"></div><div class="hit"></div></div></div>
+      <img id="photoPet" class="photo-pet" src="assets/photo-cat.png" alt="사진에 끼어든 고양이">
+      <div id="coach" class="coach"></div>
+      <button id="shutter" class="shutter" aria-label="사진 촬영">●</button><div id="toast" class="toast"></div>
+      <div id="missionIntro" class="mission-intro"><div class="mission-card"><div id="missionKicker" class="mission-kicker">거실 · 사진 1/3</div><h3 id="missionTitle">첫 가족사진</h3><ul id="missionConds" class="cond-list"></ul><p class="mission-tip">조건을 맞추면 3초 사고 타임! 언제 찍을지는 내 마음</p><button id="missionStart" class="start-btn">연출 시작</button></div></div>
+    </div>
+  </section>
+  <section id="result" class="screen result-screen"><div class="result-wrap">
+    <div id="photoBox" class="photo"><div id="photoScene" class="photo-scene"></div><div id="stamp" class="stamp"></div><div class="date-stamp">1997. 05. 05</div></div>
+    <div class="result-info">
+      <p id="resultComment" class="result-comment"></p>
+      <div class="score-rows"><div class="score-row"><small>구도</small><b id="scComp">0</b></div><div class="score-row"><small>순간</small><b id="scMoment">0</b></div><div class="score-row"><small>사고</small><b id="scChaos">0</b></div></div>
+      <div class="score-total">총점<b id="scTotal">0</b></div><div id="newBest" class="best-new"></div>
+      <div class="result-actions"><button id="nextBtn" class="next-btn main-btn">다음 사진</button><div class="row"><button id="retryBtn" class="next-btn sub-btn">한 번 더 찍기</button><button class="next-btn open-gallery sub-btn">가족 앨범</button></div></div>
+    </div>
+  </div></section>
+  <section id="gallery" class="screen gallery-screen"><div class="gallery-head"><h2><span id="galleryTitle">우리 가족 오늘의 앨범</span> <span id="galleryCount" class="gallery-count">0장</span></h2><button id="closeGallery" class="close-gallery">돌아가기</button></div><p id="galleryCopy" class="gallery-copy">완벽한 사진보다 웃긴 사진이 오래 남습니다. 최근 12장을 기기에 보관합니다.</p><div id="galleryGrid" class="gallery-grid"></div></section>
+  <section id="complete" class="screen complete-screen"><div class="complete-card"><div class="complete-emoji">🏠📸</div><h2>거실 앨범 완성!</h2><p>다음 앨범 준비 중 (생일·소풍)</p><div class="complete-actions"><button id="completeAlbum" class="next-btn main-btn">가족 앨범 보기</button><button id="completeAgain" class="next-btn sub-btn">처음부터 다시 찍기</button></div></div></section>
+  <div id="flash" class="flash"></div>
+</section></main>
+
+<script id="logic">
+/* ============================================================
+   순수 로직 (DOM 의존 없음) — V2.2 새 6포즈 체계
+   - 브라우저 게임과 tools/balance_sim.js · tools/logic_tests.js 가 이 블록을 그대로 공유한다.
+   - 인물 상태의 단일 출처는 파일 경로가 아니라 poseId 이다. (예: 'dad-p4')
+   - 좌표 단위(stage %): x = 컨테이너(509×556 캔버스) 가로 중심, y = 컨테이너 바닥,
+     cx/bottom/w/h = '눈에 보이는 영역(bbox)' 기준 값, s = 깊이 배율, z = z-index
+   ============================================================ */
+const NAMES={mom:'엄마',dad:'아빠',sis:'누나',bro:'동생'};
+const CANVAS={w:509,h:556};
+const POSE_META={"mom-p1":{"char":"mom","n":1,"file":"assets/poses/mom-p1.png","role":"base","bbox":[155,51,346,537],"face":[50.3,23.8],"faceVisible":true},"mom-p2":{"char":"mom","n":2,"file":"assets/poses/mom-p2.png","role":"wave","bbox":[148,51,382,538],"face":[51.2,23.2],"faceVisible":true,"label":"손인사"},"mom-p3":{"char":"mom","n":3,"file":"assets/poses/mom-p3.png","role":"chaos","bbox":[149,58,347,536],"face":[52.2,27.3],"faceVisible":false,"sev":1,"key":"fix_clothes","points":70},"mom-p4":{"char":"mom","n":4,"file":"assets/poses/mom-p4.png","role":"chaos","bbox":[100,51,491,534],"face":[68.0,22.4],"faceVisible":true,"sev":2,"key":"rush","points":120,"moves":"x"},"mom-p5":{"char":"mom","n":5,"file":"assets/poses/mom-p5.png","role":"chaos","bbox":[116,58,369,532],"face":[52.0,26.9],"faceVisible":true,"sev":3,"key":"panic","points":150,"reaction":"cat"},"mom-p6":{"char":"mom","n":6,"file":"assets/poses/mom-p6.png","role":"special","bbox":[150,51,505,538],"face":[55.4,23.4],"faceVisible":true,"label":"가리키기"},"dad-p1":{"char":"dad","n":1,"file":"assets/poses/dad-p1.png","role":"chaos","bbox":[90,48,389,517],"face":[32.9,27.2],"faceVisible":false,"sev":2,"key":"sneeze","points":110},"dad-p2":{"char":"dad","n":2,"file":"assets/poses/dad-p2.png","role":"chaos","bbox":[147,39,416,526],"face":[45.7,21.6],"faceVisible":true,"sev":3,"key":"startled","points":150,"reaction":"cat"},"dad-p3":{"char":"dad","n":3,"file":"assets/poses/dad-p3.png","role":"special","bbox":[138,46,387,530],"face":[45.7,24.0],"faceVisible":true,"label":"엄지 척"},"dad-p4":{"char":"dad","n":4,"file":"assets/poses/dad-p4.png","role":"chaos","bbox":[134,56,356,528],"face":[40.6,25.3],"faceVisible":true,"sev":1,"key":"eyes_closed","points":80},"dad-p5":{"char":"dad","n":5,"file":"assets/poses/dad-p5.png","role":"wave","bbox":[110,29,404,524],"face":[47.7,19.5],"faceVisible":true,"label":"손인사"},"dad-p6":{"char":"dad","n":6,"file":"assets/poses/dad-p6.png","role":"base","bbox":[150,28,367,530],"face":[52.4,19.5],"faceVisible":true},"sis-p1":{"char":"sis","n":1,"file":"assets/poses/sis-p1.png","role":"chaos","bbox":[186,122,366,537],"face":[62.5,36.0],"faceVisible":false,"sev":1,"key":"phone","points":70},"sis-p2":{"char":"sis","n":2,"file":"assets/poses/sis-p2.png","role":"chaos","bbox":[188,109,380,535],"face":[53.5,33.5],"faceVisible":true,"sev":2,"key":"startled","points":100,"reaction":"cat"},"sis-p3":{"char":"sis","n":3,"file":"assets/poses/sis-p3.png","role":"chaos","bbox":[141,114,424,492],"face":[51.6,36.1],"faceVisible":true,"sev":3,"key":"jump","points":100,"airborne":true},"sis-p4":{"char":"sis","n":4,"file":"assets/poses/sis-p4.png","role":"base","bbox":[175,95,348,542],"face":[50.9,31.2],"faceVisible":true},"sis-p5":{"char":"sis","n":5,"file":"assets/poses/sis-p5.png","role":"wave","bbox":[162,92,389,542],"face":[50.0,32.4],"faceVisible":true,"label":"손인사"},"sis-p6":{"char":"sis","n":6,"file":"assets/poses/sis-p6.png","role":"special","bbox":[153,109,406,538],"face":[53.9,35.8],"faceVisible":true,"label":"윙크 브이"},"bro-p1":{"char":"bro","n":1,"file":"assets/poses/bro-p1.png","role":"chaos","bbox":[112,182,378,536],"face":[56.4,49.1],"faceVisible":true,"sev":3,"key":"run","points":130,"reaction":"cat","moves":"x"},"bro-p2":{"char":"bro","n":2,"file":"assets/poses/bro-p2.png","role":"chaos","bbox":[115,234,400,530],"face":[48.0,59.9],"faceVisible":true,"sev":1,"key":"crouch","points":70},"bro-p3":{"char":"bro","n":3,"file":"assets/poses/bro-p3.png","role":"special","bbox":[138,229,365,533],"face":[50.2,55.1],"faceVisible":true,"label":"메롱"},"bro-p4":{"char":"bro","n":4,"file":"assets/poses/bro-p4.png","role":"chaos","bbox":[143,151,366,457],"face":[50.0,42.0],"faceVisible":true,"sev":2,"key":"jump","points":100,"airborne":true},"bro-p5":{"char":"bro","n":5,"file":"assets/poses/bro-p5.png","role":"wave","bbox":[122,147,363,537],"face":[50.5,41.7],"faceVisible":true,"label":"손인사"},"bro-p6":{"char":"bro","n":6,"file":"assets/poses/bro-p6.png","role":"base","bbox":[167,140,354,535],"face":[51.5,39.9],"faceVisible":true}};
+const BASE={mom:'mom-p1',dad:'dad-p6',sis:'sis-p4',bro:'bro-p6'};
+const poseOfRole=(id,role)=>Object.keys(POSE_META).find(k=>POSE_META[k].char===id&&POSE_META[k].role===role);
+const WAVE={},SPECIAL={},REACT={};['mom','dad','sis','bro'].forEach(id=>{WAVE[id]=poseOfRole(id,'wave');SPECIAL[id]=poseOfRole(id,'special');const r=Object.keys(POSE_META).find(k=>POSE_META[k].char===id&&POSE_META[k].reaction==='cat');if(r)REACT[id]=r});
+const STAGING_LIMIT=15,CHAOS_SECONDS=8,HOLD=1.1,CAT_HOLD=1.4,SETTLE=.5,READY_HOLD=.3,READY_NOTICE=.6,A_DEFAULT=390/768,HC0=58; /* HC0: 컨테이너 높이(stage 높이 %), 세로 화면 CSS 와 동일 */
+const MIN_Y=-30,NEAR_K=.025,FACE_MIN_H=12;   /* y<0: 발이 프레임 아래로 나간 '카메라 바로 앞' 구간. 배율은 1 을 넘어 커진다 */
+const depthScale=y=>y<0?1-y*NEAR_K:Math.max(.68,1-y*.007);
+const zOf=y=>40-Math.round(y);
+const MULT={1:1,.5:.55,0:.25};
+const STAGE_MAX=94;
+
+/* 컨테이너 사각형(c) + 포즈 → 눈에 보이는 영역 기준 측정값 */
+function poseMetrics(poseId,c){const P=POSE_META[poseId],b=P.bbox,w=(b[2]-b[0])/CANVAS.w*c.wc,h=(b[3]-b[1])/CANVAS.h*c.hc;
+  return{id:P.char,poseId,role:P.role,faceOK:P.faceVisible!==false,
+    cx:c.cx+((b[0]+b[2])/2/CANVAS.w-.5)*c.wc,bottom:c.bottom+(CANVAS.h-b[3])/CANVAS.h*c.hc,w,bw:w,h,s:c.s,z:c.z,
+    face:{x:c.cx+(P.face[0]/100-.5)*c.wc,y:100-(c.bottom+(1-P.face[1]/100)*c.hc)}}}
+/* 논리 위치(x,y) → 측정값. wc0/hc0 = 배율 1 일 때 컨테이너 크기(stage %) */
+function buildMember(sp,A){const hc0=sp.hc0||HC0,wc0=sp.wc0||hc0*(CANVAS.w/CANVAS.h)/(A||A_DEFAULT),s=depthScale(sp.y);
+  const m=poseMetrics(sp.poseId,{cx:sp.x,bottom:sp.y,wc:wc0*s,hc:hc0*s,s,z:zOf(sp.y)});return Object.assign(m,{x:sp.x,y:sp.y,wc0,hc0,A:A||A_DEFAULT})}
+function nominalMember(id,x,y,poseId){return buildMember({id,poseId:poseId||BASE[id],x,y},A_DEFAULT)}
+const withPose=(m,poseId)=>{const lim=limitsFor(poseId,m.wc0,m.hc0,m.y);return buildMember({poseId,x:Math.max(lim.minX,Math.min(lim.maxX,m.x)),y:m.y,wc0:m.wc0,hc0:m.hc0},m.A)};   /* 포즈가 넓어져도 눈에 보이는 영역은 화면 안 */
+/* 화면 안에 눈에 보이는 영역이 들어가는 x/y 한계 (드래그 경계·사고 이동 공통) */
+/* 좌우: 몸 일부는 프레임 밖으로 나가도 된다(OVERHANG). 단 얼굴 앵커는 프레임 안(FACE_X_MIN~MAX)에 남아 다시 잡을 수 있다 */
+const OVERHANG=.4,FACE_X_MIN=8,FACE_X_MAX=92;
+function limitsFor(poseId,wc0,hc0,y){const P=POSE_META[poseId],b=P.bbox,s=depthScale(y),wcs=wc0*s,L=(.5-b[0]/CANVAS.w)*wcs,R=(b[2]/CANVAS.w-.5)*wcs,over=OVERHANG*(R+L),fo=(P.face[0]/100-.5)*wcs;
+  return{minX:Math.max(L-over,FACE_X_MIN-fo),maxX:Math.min(100-R+over,FACE_X_MAX-fo)}}
+/* 신발이 설 수 있는 가장 뒤쪽 바닥선(화면 아래에서 %). 배경 표시 방식(세로 cover/가로 cover)에 따라 DOM 쪽이 갱신한다 */
+let FLOOR_FEET=20;
+function maxYFor(poseId,hc0){const b=POSE_META[poseId].bbox,a=(CANVAS.h-b[1])/CANVAS.h*hc0;let y=STAGE_MAX-a;for(let i=0;i<4;i++)y=STAGE_MAX-a*depthScale(y);
+  const g=(CANVAS.h-b[3])/CANVAS.h*hc0;let f=FLOOR_FEET-g;for(let i=0;i<4;i++)f=FLOOR_FEET-g*depthScale(f);   /* 신발 바닥(bbox 하단)이 FLOOR_FEET 를 넘지 않는 컨테이너 y */
+  return Math.max(MIN_Y+1,Math.min(y,f))}
+/* 가장 앞(아래)까지 내릴 수 있는 y: 얼굴 앵커가 프레임 안(바닥에서 FACE_MIN_H% 위)에 남아야 다시 잡을 수 있다 */
+function minYFor(poseId,hc0){const f=POSE_META[poseId].face[1]/100;let y=MIN_Y;while(y<STAGE_MAX&&y+(1-f)*hc0*depthScale(y)<FACE_MIN_H)y+=.5;return y}
+function moveM(m,x,y){const lim=limitsFor(m.poseId,m.wc0,m.hc0,y);return buildMember({poseId:m.poseId,x:Math.max(lim.minX,Math.min(lim.maxX,x)),y,wc0:m.wc0,hc0:m.hc0},m.A)}
+
+/* ----- 조건 판정 ----- */
+const faceOf=m=>m.face;
+function faceVisible(m,ms){if(!m.faceOK)return false;const f=faceOf(m);if(f.x<5||f.x>95||f.y<3||f.y>92)return false;
+  return!ms.some(o=>o!==m&&o.z>m.z&&Math.abs(f.x-o.cx)<o.w*.3&&f.y>100-o.bottom-o.h*.94&&f.y<100-o.bottom)}
+const ctr=m=>{const lo=Math.max(0,m.bottom),hi=Math.min(100,m.bottom+m.h);return{x:m.cx,y:hi>lo?(lo+hi)/2:m.bottom+m.h/2}};   /* 프레임 밖으로 나간 부분은 제외한 '찍히는 부분'의 중심 */
+const faceInFrame=m=>{const f=faceOf(m);return f.x>=5&&f.x<=95&&f.y>=3&&f.y<=92};
+const distW=(a,b,A)=>Math.hypot((a.x-b.x)/100,((a.y-b.y)/100)/A);
+const byId=(ms,id)=>ms.find(m=>m.id===id);
+function triangleOK(ms,c,A){const fs=ms.filter(m=>m.faceOK).map(faceOf).filter(f=>f.x>=5&&f.x<=95&&f.y>=3&&f.y<=92).map(f=>({x:f.x/100,y:f.y/100/A}));
+  for(let i=0;i<fs.length;i++)for(let j=i+1;j<fs.length;j++)for(let k=j+1;k<fs.length;k++){const a=fs[i],b=fs[j],d=fs[k];
+    const area=Math.abs((b.x-a.x)*(d.y-a.y)-(d.x-a.x)*(b.y-a.y))/2,dm=Math.min(Math.hypot(a.x-b.x,a.y-b.y),Math.hypot(a.x-d.x,a.y-d.y),Math.hypot(b.x-d.x,b.y-d.y));
+    if(area>=c.minArea&&dm>=c.minSide)return true}return false}
+const CONDS={
+  faces:(c,ms)=>ms.filter(m=>faceVisible(m,ms)).length>=c.min,
+  big:(c,ms)=>ms.some(m=>{const o=ms.filter(x=>x!==m);return m.s>=c.ratio*(o.reduce((a,x)=>a+x.s,0)/o.length)}),
+  behind:(c,ms)=>{const b=byId(ms,c.back),f=byId(ms,c.front);return b.bottom>=f.bottom+c.gap&&b.z<f.z},   /* 신발이 gap 이상 위 + 실제로 뒤에 그려질 때(z). 카메라 앞에서 둘이 겹쳐 보이는 경우도 눈에 보이는 앞뒤와 일치 */
+  close:(c,ms,A)=>distW(ctr(byId(ms,c.a)),ctr(byId(ms,c.b)),A)<=c.max,
+  triangle:(c,ms,A)=>triangleOK(ms,c,A),
+  special:(c,ms)=>ms.filter(m=>m.role==='special').length>=c.min   /* wave 는 불충족 — 두 번 탭해야 나오는 연출 */
+};
+function evaluateConditions(lv,ms,A){return lv.conds.map(c=>!!CONDS[c.type](c,ms,A||A_DEFAULT))}
+
+/* ----- 레벨 데이터 (거실 3레벨, V2.2 타임라인) ----- */
+const LEVELS=[
+ {id:'living1',scene:'거실',title:'첫 가족사진',bg:'assets/poses/living-room2.png',
+  conds:[{type:'faces',min:3,label:'얼굴 3개 보이기'},{type:'big',ratio:1.12,label:'한 명은 크게 앞으로'}],
+  chaos:[
+   {id:'dadEyes',at:2.2,actor:'dad',pose:'dad-p4',bubble:'아빠 눈 감는다!'},
+   {id:'broJump',at:1.0,actor:'bro',pose:'bro-p4',move:{dxs:[-20,-14,14,20],dys:[0,12,20,28]},bump:true,bubble:'동생 날아간다!'}],
+  extra:{id:'momFix',at:1.6,actor:'mom',pose:'mom-p3',bubble:'엄마 옷매무새!'},
+  rarity:{funny:70,disaster:260,legend:99999},
+  startUnmet:1,
+  start:[[['mom',18,12],['dad',40,14],['sis',62,12],['bro',82,13]],[['mom',20,13],['dad',42,12],['sis',62,14],['bro',80,12]]],
+  canon:[['mom',18,12],['dad',40,14],['sis',62,12],['bro',82,-4]]},
+ {id:'living2',scene:'거실',title:'키 큰 사람은 뒤로',bg:'assets/poses/living-room2.png',
+  conds:[{type:'behind',back:'dad',front:'mom',gap:2.5,label:'아빠는 엄마 뒤로!'},{type:'close',a:'mom',b:'dad',max:.22,label:'엄마 아빠 꼭 붙기'}],
+  chaos:[
+   {id:'sisPhone',at:2.3,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
+   {id:'momRush',at:1.1,actor:'mom',pose:'mom-p4',move:{dxs:[-42,-34,-26,-20,-14,14,20,26,34,42]},bump:true,bubble:'엄마 급하게 달려요!'}],
+  extra:{id:'broCrouch',at:1.8,actor:'bro',pose:'bro-p2',bubble:'동생 엎드렸다!'},
+  rarity:{funny:70,disaster:260,legend:99999},
+  startUnmet:0,
+  start:[[['mom',40,10],['dad',50,6],['sis',18,8],['bro',82,6]],[['mom',42,11],['dad',52,7],['sis',20,6],['bro',80,8]]],
+  canon:[['mom',40,10],['dad',50,17],['sis',18,8],['bro',82,6]]},
+ {id:'living3',scene:'거실',title:'사고 직전 가족사진',bg:'assets/poses/living-room2.png',
+  conds:[{type:'triangle',minArea:.037,minSide:.1,label:'삼각 구도 만들기'},{type:'special',min:1,label:'한 명은 특수 자세'}],
+  chaos:[
+   {id:'dadSneeze',at:2.0,actor:'dad',pose:'dad-p1',bubble:'아빠 에취!'},
+   {id:'momFix',at:1.5,actor:'mom',pose:'mom-p3',bubble:'엄마 옷매무새!'},
+   {id:'cat',at:.8,kind:'cat',catchAfter:.15,bump:'always',bubble:'고양이가 온다!'}],
+  extra:{id:'sisPhone',at:1.2,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
+  dropSecond:true,
+  rarity:{funny:70,disaster:260,legend:460},
+  startUnmet:1,
+  start:[[['mom',50,18],['dad',18,8],['sis',66,10],['bro',50,5]],[['mom',48,18],['dad',17,9],['sis',68,9],['bro',52,6]]],
+  canon:[['mom',50,18],['dad',18,8],['sis',66,10,'sis-p6'],['bro',50,-4]]}
+];
+const DUO_BONUS=120,CAT_BONUS=300;
+const RARITY={normal:{label:'평범한 한 장',icon:'📷'},funny:{label:'제법 웃김',icon:'😆'},disaster:{label:'대참사',icon:'💥'},legend:{label:'전설의 가족사진',icon:'👑'}};
+const CAT_POS={x:50,y:22};   /* 고양이가 앉는 곳(stage % : 가로 중심, 세로 중심) */
+
+/* 8초 촬영 구간: ① 레벨의 '앵커 사건'(구도를 깨는 사고, 원래 3초 시각표를 8초로 늘림) + ② 인물별로 어긋난 주기 행동(필러).
+   필러: 인물마다 시작 시각을 0.5초 이상 엇갈리게 하고 1.5~2.5초 간격으로 자기 사고 포즈를 돌아가며, 일정 시간(hold) 후 원래 자세로 복귀.
+   seed 가 같으면 항상 같은 결과(테스트·시뮬레이션용), 게임에서는 판마다 새 seed. */
+const FILL_BUBBLE={startled:'앗!',jump:'점프!',sneeze:'에취!',phone:'알림!',run:'뛰어!'};
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function buildEvents(lv,diff,seed,noFill){const K=CHAOS_SECONDS/3,sd=seed!=null?seed:[...lv.id].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7),R=rng(sd);
+  const anchor=e=>Object.assign({},e,{at:+(e.at*K).toFixed(2),hold:e.kind==='cat'?CAT_HOLD:HOLD+.2});
+  let ev=lv.chaos.map(anchor);
+  if(diff==='easy'){ev=ev.map(e=>Object.assign({},e,{at:+(e.at-.8).toFixed(2)}));if(lv.dropSecond){const n=ev.filter(e=>e.kind!=='cat');if(n.length>1)ev=ev.filter(e=>e!==n[1])}}
+  if(diff==='chaos'){const a0=ev.reduce((m,e)=>Math.max(m,e.at),0);ev=ev.map(e=>Object.assign({},e,{at:+(a0-(a0-e.at)*.75).toFixed(2)}));ev.push(anchor(lv.extra))}
+  const anchors=ev.slice();if(noFill)return ev.sort((a,b)=>b.at-a.at);const ids=['mom','dad','sis','bro'].map(v=>[R(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+  ids.forEach((id,i)=>{const pool=Object.keys(POSE_META).filter(k=>POSE_META[k].char===id&&POSE_META[k].role==='chaos'&&!anchors.some(e=>e.pose===k)).map(k=>[R(),k]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+    let t=CHAOS_SECONDS-.9-i*.55-R()*.5,n=0,last=null;
+    while(t>=1.0){const own=anchors.filter(e=>e.actor===id);
+      for(let k=0;k<12&&ev.some(e=>Math.abs(e.at-t)<.45);k++)t-=.1;   /* 다른 행동과 겹치면 조금씩 밀어서 배치 */
+      if(t>=.9&&R()>.1&&!own.some(e=>Math.abs(e.at-t)<1.5)&&!ev.some(e=>Math.abs(e.at-t)<.45)){let k=pool[n%pool.length];if(k===last){n++;k=pool[n%pool.length]}n++;last=k;const P=POSE_META[k];
+        ev.push({id:'f_'+id+'_'+ev.length,at:+t.toFixed(2),actor:id,pose:k,filler:true,hold:+(HOLD+R()*.4).toFixed(2),bubble:P.sev>=2?FILL_BUBBLE[P.key]||null:null})}
+      t-=1.5+R()}});
+  return ev.sort((a,b)=>b.at-a.at)}
+
+/* ----- 점수·등급 (포즈 상태 기준) -----
+   구도 = (round(80×compRate)+min(20,7×연출포즈 인원))×4   연출포즈 = wave/special 이면서 얼굴이 보이는 포즈
+   순간 = 지금 chaos 포즈인 인물의 포즈 점수 합 × 배율,  사고 = (두 명 이상 동시 사고 +250, 고양이 +300) × 배율 */
+function rarityOf(lv,compRate,accident,eventCount){const r=lv.rarity;
+  if(compRate>=.5&&eventCount>=2&&accident>=r.legend)return'legend';
+  if(accident>=r.disaster)return'disaster';
+  if(accident>=r.funny)return'funny';return'normal'}
+function scoreSnapshot(lv,ms,A,opt){opt=opt||{};
+  const conds=evaluateConditions(lv,ms,A),met=conds.filter(Boolean).length,compRate=met/lv.conds.length,mult=MULT[compRate];
+  const staged=ms.filter(m=>(m.role==='wave'||m.role==='special')&&m.faceOK&&faceInFrame(m)).length;
+  const chaosMs=ms.filter(m=>m.role==='chaos'),single=chaosMs.reduce((a,m)=>a+POSE_META[m.poseId].points,0);
+  const duo=chaosMs.length>=2,cat=!!opt.catVisible,bonus=(duo?DUO_BONUS:0)+(cat?CAT_BONUS:0);
+  const comp=(Math.round(80*compRate)+Math.min(20,7*staged))*4,moment=Math.round(single*mult),chaos=Math.round(bonus*mult),accident=moment+chaos;
+  const events=chaosMs.map(m=>POSE_META[m.poseId].key).concat(cat?['cat']:[]);
+  return{conds,met,compRate,mult,staged,comp,moment,chaos,accident,total:comp+accident,events,flags:{duo,cat},rarity:rarityOf(lv,compRate,accident,events.length)}}
+
+/* ----- 사고가 구도를 무너뜨리는 결정적 계획 -----
+   사고 인물·시점·포즈는 고정. 이동 '방향'만 현재 구도의 약한 고리를 깨는 쪽(충족 수 최소, 동률이면 최소 이동)으로 고른다. */
+const BUMP_DX=[-22,-14,14,22],BUMP_DY=[0,10,18,26,-8];
+function planMoves(lv,ms,A,ev,locked){
+  const avoid=new Set([...(ev.avoid||[]),...(locked||[])]);let cur=ms.map(m=>Object.assign({},m));const plan=[];
+  const apply=(arr,c)=>arr.map(m=>m.id!==c.id?m:(c.reset?withPose(m,BASE[m.id]):moveM(m,c.x,c.y)));
+  const met=arr=>evaluateConditions(lv,arr,A).filter(Boolean).length;
+  const pick=cands=>{let b=null;for(const c of cands){const n=met(apply(cur,c));if(!b||n<b.n||(n===b.n&&c.cost<b.c.cost))b={c,n}}return b};
+  const put=c=>{cur=apply(cur,c);plan.push(c)};
+  if(ev.move&&ev.actor){const a=byId(cur,ev.actor),yMax=maxYFor(a.poseId,a.hc0),cands=[];
+    ev.move.dxs.forEach(dx=>(ev.move.dys||[0]).forEach(dy=>cands.push({id:a.id,x:a.x+dx,y:Math.max(minYFor(a.poseId,a.hc0),Math.min(yMax,a.y+dy)),cost:Math.abs(dx)+Math.abs(dy),kind:'actor'})));
+    const b=pick(cands);if(b)put(b.c)}
+  if(ev.bump&&(ev.bump==='always'||met(cur)===lv.conds.length)){
+    const cands=[];cur.forEach(v=>{if(v.id===ev.actor)return;const yMax=maxYFor(v.poseId,v.hc0);
+      if(!avoid.has(v.id))BUMP_DX.forEach(dx=>BUMP_DY.forEach(dy=>{cands.push({id:v.id,x:v.x+dx,y:Math.max(minYFor(v.poseId,v.hc0),Math.min(yMax,v.y+dy)),cost:Math.abs(dx)+Math.abs(dy),kind:'bump'})}));
+      if(v.role==='special'||v.role==='wave')cands.push({id:v.id,reset:true,cost:5,kind:'reset'})});
+    const base=met(cur),b=pick(cands);
+    if(b&&(ev.bump==='always'||b.n<base))put(b.c);
+    else if(ev.bump===true){/* 한 명으로 안 깨지면 두 명을 연달아 밀친다 */
+      let bp=null;for(const c1 of cands){const a1=apply(cur,c1);for(const c2 of cands){if(c2.id===c1.id)continue;const n=met(apply(a1,c2)),cost=c1.cost+c2.cost;if(n<base&&(!bp||n<bp.n||(n===bp.n&&cost<bp.cost)))bp={c1,c2,n,cost}}}
+      if(bp){put(bp.c1);put(bp.c2)}}}
+  return plan}
+
+/* ----- 고양이 연쇄 반응: 고양이와 가장 가까운 최대 2명(거리 → 인물 ID 순)이 자기 반응 포즈로 전환 ----- */
+function catReactions(ms,A){
+  const order=ms.filter(m=>REACT[m.id]).map(m=>({m,d:distW(ctr(m),CAT_POS,A||A_DEFAULT)})).sort((a,b)=>a.d-b.d||(a.m.id<b.m.id?-1:1)).slice(0,2);
+  return order.map(({m})=>({id:m.id,poseId:REACT[m.id],dx:m.id==='bro'?(m.x<CAT_POS.x?9:-9):0}))}
+/* 반응 적용(순수): 포즈 교체 + (동생) 고양이 쪽 이동 */
+function applyReactions(ms,A){return catReactions(ms,A).reduce((arr,r)=>arr.map(m=>{if(m.id!==r.id)return m;const p=withPose(m,r.poseId);return r.dx?moveM(p,p.x+r.dx,p.y):p}),ms)}
+
+/* 시뮬레이션: startMembers(구도 완성 상태)에서 남은 T초에 셔터를 눌렀을 때의 결과 */
+function simulateShot(lv,startMembers,A,T,diff,noFill,seed){
+  const events=buildEvents(lv,diff||'normal',seed,noFill);let cur=startMembers.map(m=>Object.assign({},m));const steps=[];
+  events.forEach(ev=>{
+    if(ev.kind==='cat'){const react=catReactions(cur,A);cur=applyReactions(cur,A);const plan=planMoves(lv,cur,A,ev,[]);plan.forEach(c=>{cur=cur.map(m=>m.id!==c.id?m:(c.reset?withPose(m,BASE[m.id]):moveM(m,c.x,c.y)))});
+      steps.push({ev,react,plan,doneAt:ev.at-.1-SETTLE,cat:true});return}
+    cur=cur.map(m=>m.id===ev.actor?withPose(m,ev.pose):m);const plan=planMoves(lv,cur,A,ev,[]);plan.forEach(c=>{cur=cur.map(m=>m.id!==c.id?m:(c.reset?withPose(m,BASE[m.id]):moveM(m,c.x,c.y)))});
+    steps.push({ev,plan,doneAt:ev.at-SETTLE})});
+  /* T 시점의 상태: 이동(plan)은 완료 시각(doneAt) 이후 찍으면 반영, 포즈는 '시작한 지 hold 초 안'일 때만 사건 포즈, 지나면 시작 포즈로 복귀 */
+  let at=startMembers.map(m=>Object.assign({},m)),catVisible=false;
+  const mv=c=>{at=at.map(m=>m.id!==c.id?m:(c.reset?withPose(m,BASE[m.id]):moveM(m,c.x,c.y)))};
+  steps.forEach(s=>{if(T>s.ev.at+1e-9)return;
+    if(s.cat&&T<=s.ev.at-(s.ev.catchAfter||0)+1e-9)catVisible=true;
+    if(T<=s.doneAt+1e-9)s.plan.forEach(mv)});
+  const sp={};startMembers.forEach(m=>{sp[m.id]=m.poseId});
+  at=at.map(m=>{let best=null;events.forEach(e=>{if(e.kind==='cat'||e.actor!==m.id)return;if(T<=e.at+1e-9&&e.at-T<(e.hold||HOLD)&&(!best||e.at<best.at))best=e});const p=best?best.pose:sp[m.id];return p===m.poseId?m:withPose(m,p)});
+  const ct=events.find(e=>e.kind==='cat');if(ct&&T<=ct.at+1e-9&&ct.at-T<CAT_HOLD)at=applyReactions(at,A);
+  return scoreSnapshot(lv,at,A,{catVisible})}
+
+/* ----- 제목·문구 (포즈 key 조합) ----- */
+const TITLES={
+  cat_react:['고양이가 센터, 가족은 각자 놀람','주인공은 고양이, 가족은 엑스트라','고양이 한 마리에 가족 전멸'],
+  cat:['고양이가 가족 대표가 됨','주인공은 고양이였다','센터는 고양이 차지'],
+  duo:['아무도 카메라를 안 봄','합동 딴짓 현장 포착','다 같이 한 장, 다 따로 한 장'],
+  eyes_jump:['아빠는 꿈속, 동생은 공중','눈 감은 아빠 위로 날아간 동생'],
+  phone_rush:['누나는 폰, 엄마는 달리기','알림 한 번에 가족 해산'],
+  sneeze_clothes:['재채기 아빠, 옷 정리 엄마','얼굴 둘 실종, 사진 반쪽'],
+  eyes_closed:['하필 지금 눈 감은 아빠','아빠는 이미 꿈나라','꾸벅! 아빠만 인사 중'],
+  jump:['동생만 중력 거부 중','방방 뛰는 가족이 주인공','공중부양 가족사진'],
+  phone:['누나는 단체사진 불참','가족보다 알림이 먼저'],
+  rush:['엄마가 사진 밖으로 달려감','엄마, 어디 가세요?'],
+  sneeze:['아빠 에취! 사진도 에취!','재채기에 얼굴이 사라짐'],
+  fix_clothes:['엄마 옷매무새가 먼저','잠깐만, 옷 좀!'],
+  other:['가족 단체 사고 현장','이 집 단체사진은 무리였다'],
+  early:['너무 평화로운데요? 가족이 뭔가 숨기는 눈치','완벽한데… 왜 이렇게 조용하죠?','이 평화, 오래 못 갈 것 같은데'],
+  notready:['가족이 아직 준비 안 됐어요','모이긴 했는데 아직 어색해요','시작도 전에 흐트러진 가족'],
+  collapse:['구도는 무너졌지만 웃음은 남았다','가족사진 아니고 사고 현장']
+};
+const COMMENTS={
+  normal:['다음엔 조금 기다려 볼까요? 가족이 슬슬 시동을 거는 중이에요.','안전하게 한 장! 그런데 이 가족, 아직 본색을 안 보였어요.'],
+  funny:['한 명쯤은 괜찮겠죠. 이게 바로 우리 가족다운 사진!','웃음 포인트 하나 확보! 조금만 더 기다리면 더 터질지도?'],
+  disaster:['사진은 망했지만 추억은 완벽해요. 두고두고 놀릴 한 장!','가족 때문에 기가 막히게 망한 사진, 앨범에 저장됐어요.'],
+  legend:['전설 탄생! 이 사진은 가보로 물려주세요.','구도도 살리고 사고도 잡았어요. 타이밍의 신!']
+};
+function makeTitle(res,seed){const k=res.flags,n=seed||0,E=new Set(res.events);let key;
+  const pickv=a=>a[n%a.length];
+  if(!res.events.length)key=res.compRate>=1?'early':'notready';
+  else if(res.compRate===0)key='collapse';
+  else if(k.cat&&res.events.length>2)key='cat_react';else if(k.cat)key='cat';
+  else if(E.has('eyes_closed')&&E.has('jump'))key='eyes_jump';else if(E.has('phone')&&E.has('rush'))key='phone_rush';else if(E.has('sneeze')&&E.has('fix_clothes'))key='sneeze_clothes';
+  else if(k.duo)key='duo';
+  else if(E.has('eyes_closed'))key='eyes_closed';else if(E.has('jump'))key='jump';else if(E.has('phone'))key='phone';else if(E.has('rush'))key='rush';else if(E.has('sneeze'))key='sneeze';else if(E.has('fix_clothes'))key='fix_clothes';else key='other';
+  return{key,title:pickv(TITLES[key]),comment:pickv(COMMENTS[res.rarity])}}
+if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,SPECIAL,REACT,LEVELS,MULT,STAGING_LIMIT,CHAOS_SECONDS,SETTLE,A_DEFAULT,HC0,STAGE_MAX,depthScale,minYFor,faceInFrame,MIN_Y,HOLD,CAT_HOLD,get FLOOR_FEET(){return FLOOR_FEET},set FLOOR_FEET(v){FLOOR_FEET=v},zOf,poseMetrics,buildMember,nominalMember,withPose,limitsFor,maxYFor,moveM,faceOf,faceVisible,evaluateConditions,buildEvents,rarityOf,scoreSnapshot,planMoves,catReactions,applyReactions,simulateShot,makeTitle,TITLES,COMMENTS,RARITY,DUO_BONUS,CAT_BONUS,CAT_POS};
+</script>
+<script>
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+  const screens={title:$('#title'),game:$('#game'),result:$('#result'),gallery:$('#gallery'),complete:$('#complete')};
+  /* 구버전(V1) 앨범 기록 렌더링 전용 — 이 이미지 파일들은 삭제하지 말 것 */
+  const legacyPortraits={mom:'assets/mom-v2.png',dad:'assets/dad-v2.png',sis:'assets/sis-v2.png',bro:'assets/bro-v2.png'};
+  const legacyAction={mom:'assets/mom-action.png',dad:'assets/dad-action.png',sis:'assets/sis-action.png',bro:'assets/bro-action.png'};
+  const legacyX={mom:18,dad:39,sis:59,bro:78};
+  const difficulties={easy:{label:'편안하게',button:'편안하게 찍기'},normal:{label:'보통',button:'가족사진 찍기'},chaos:{label:'대환장',button:'대환장 찍기'}};
+  const KEY={level:'familyPhotoV2Level',best:'familyPhotoV2Best',diff:'familyPhotoDifficulty',gallery:'familyPhotoGallery',mute:'familyPhotoMuted'};
+  const TAP_PX=6,TAP_MS=250,DRAG_IN_CHAOS=true;
+  const store={get:(k,d)=>{try{return localStorage.getItem(k)??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
+  let currentLevel=Math.max(1,Math.min(3,Number(store.get(KEY.level,1))||1)),difficulty=store.get(KEY.diff,'normal'),best=Number(store.get(KEY.best,0))||0;
+  let phase='title',cfg=LEVELS[0],S={fired:[],pending:[],timers:[],prev:[]},drag=null,galleryReturn='title',roundNo=0,resultTimers=[],muted=store.get(KEY.mute,'0')==='1';
+  const stage=$('#stage'),pet=$('#photoPet');
+  $('#best').textContent=best.toLocaleString();
+  const now=()=>performance.now()/1000;
+  const el=id=>$(`.family-member[data-id="${id}"]`);
+  const memberEls=()=>$$('.family-member');
+  /* 포즈 24장 + 고양이·배경 프리로드(decode 까지) — 사고 중 포즈 교체에서 빈 프레임이 보이면 안 된다 */
+  const keepAlive=[];
+  const preloadDone=Promise.all([...Object.values(POSE_META).map(p=>p.file),'assets/photo-cat.png','assets/poses/living-room2.png','assets/living-room.png'].map(src=>new Promise(res=>{const i=new Image();keepAlive.push(i);i.onerror=()=>res(false);i.src=src;(i.decode?i.decode():Promise.resolve()).then(()=>res(true),()=>res(false))})));
+
+  /* ---------- 소리·진동 (외부 파일 없이 합성) ---------- */
+  let actx=null;
+  function tone(f,d,type,v,at){const t=actx.currentTime+(at||0),o=actx.createOscillator(),g=actx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v||.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+d+.02)}
+  function sfx(kind){if(muted)return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();
+    if(kind==='tick')tone(720,.07,'square',.06);if(kind==='go')tone(980,.16,'square',.07);
+    if(kind==='shutter'){tone(1500,.04,'square',.1);tone(300,.12,'sawtooth',.08,.04)}
+    if(kind==='stamp'){tone(110,.28,'sine',.3);tone(70,.35,'sine',.3,.03)}
+    if(kind==='ok')tone(880,.09,'triangle',.1);if(kind==='boing'){tone(240,.18,'sine',.12);tone(420,.2,'sine',.1,.08)}
+    if(kind==='score')tone(520+Math.random()*80,.05,'triangle',.05)}catch{}}
+  const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch{}};
+  function paintMute(){$('#muteBtn').textContent=muted?'🔇':'🔊'}paintMute();
+  $('#muteBtn').addEventListener('click',()=>{muted=!muted;store.set(KEY.mute,muted?'1':'0');paintMute();if(!muted)sfx('ok')});
+
+  /* ---------- 화면 ---------- */
+  function show(name){Object.values(screens).forEach(s=>s.classList.remove('active'));screens[name].classList.add('active')}
+  function toast(t,hot){const e=$('#toast');e.textContent=t;e.classList.toggle('hot',!!hot);e.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove('show'),hot?1100:1300)}
+  function bubble(m,text,ms){memberEls().forEach(x=>x!==m&&x.removeAttribute('data-gag'));m.dataset.gag=text;clearTimeout(bubble._t);bubble._t=setTimeout(()=>m.removeAttribute('data-gag'),ms||1500)}
+  function setCoach(text){const c=$('#coach');if(text){c.textContent=text;c.classList.add('show')}else c.classList.remove('show')}
+
+  /* ---------- 배치·깊이·포즈 ---------- */
+  function applyDepth(m){const y=m._base!=null?m._base:(parseFloat(m.style.bottom)||0),scale=depthScale(y);m.style.setProperty('--depth-scale',scale.toFixed(3));m.style.zIndex=String(zOf(y))}
+  function place(m,x,y){m._base=y;m.style.left=x+'%';m.style.bottom=y+'%';applyDepth(m)}
+  function placeInstant(m,x,y){m.classList.add('instant');place(m,x,y);void m.offsetWidth;m.classList.remove('instant')}
+  /* 포즈 상태의 단일 출처 = data-pose-id. 이미지·클릭 영역(.hit)·말풍선 위치를 한 번에 맞춘다 */
+  function setPose(m,poseId,animate){const P=POSE_META[poseId],b=P.bbox,hit=m.querySelector('.hit');
+    m.querySelector('.char-img').src=P.file;m.dataset.poseId=poseId;m.dataset.role=P.role;
+    hit.style.left=b[0]/CANVAS.w*100+'%';hit.style.top=b[1]/CANVAS.h*100+'%';hit.style.width=(b[2]-b[0])/CANVAS.w*100+'%';hit.style.height=(b[3]-b[1])/CANVAS.h*100+'%';
+    m.style.setProperty('--bt',(b[1]/CANVAS.h*100).toFixed(1));
+    fitInStage(m);
+    if(animate){const pop=m.querySelector('.pose-pop');pop.classList.remove('popping');void pop.offsetWidth;pop.classList.add('popping')}}   /* 0.12초 팝 — 위치·크기 계산에는 영향 없음(측정은 .pose-wrap 기준) */
+  /* 포즈가 바뀌면 bbox 도 바뀐다 → 눈에 보이는 영역이 화면 밖으로 나가지 않게 x 를 보정 */
+  function fitInStage(m){const r=stage.getBoundingClientRect();if(!r.width||m._base==null||!m.offsetWidth)return;const lim=limitsFor(m.dataset.poseId,m.offsetWidth/r.width*100,m.offsetHeight/r.height*100,m._base),x=parseFloat(m.style.left),nx=Math.max(lim.minX,Math.min(lim.maxX,x));const ny=Math.max(m._base,minYFor(m.dataset.poseId,m.offsetHeight/r.height*100));if(Number.isFinite(x)&&(Math.abs(nx-x)>.01||ny!==m._base))place(m,Number.isFinite(x)?nx:x,ny)}
+  function resetPose(m){delete m.dataset.accident;setPose(m,BASE[m.dataset.id],false)}
+
+  /* ---------- 측정: 컨테이너 사각형(깊이 배율 반영, 팝 애니메이션 제외) → 눈에 보이는 영역 ---------- */
+  function stageAspect(){const r=stage.getBoundingClientRect();return r.width/r.height}
+  function containerBox(m,sr){const mr=m.getBoundingClientRect(),tf=getComputedStyle(m.querySelector('.pose-wrap')).transform;let s=1;
+    if(tf&&tf!=='none'){const v=tf.match(/matrix\(([^)]+)\)/);if(v)s=parseFloat(v[1].split(',')[0])}
+    return{cx:(mr.left+mr.width/2-sr.left)/sr.width*100,bottom:(sr.bottom-mr.bottom)/sr.height*100,wc:mr.width*s/sr.width*100,hc:mr.height*s/sr.height*100,s,z:Number(getComputedStyle(m).zIndex)||10}}
+  function measure(){const sr=stage.getBoundingClientRect();return memberEls().map(m=>poseMetrics(m.dataset.poseId,containerBox(m,sr)))}
+  function measureLogical(){const sr=stage.getBoundingClientRect(),A=sr.width/sr.height;return memberEls().map(m=>buildMember({poseId:m.dataset.poseId,x:parseFloat(m.style.left),y:m._base,wc0:m.offsetWidth/sr.width*100,hc0:m.offsetHeight/sr.height*100},A))}
+
+  /* ---------- 조건 카드 ---------- */
+  function renderConds(status,silent){const bar=$('#condBar');if(!bar.children.length||bar.dataset.level!==String(currentLevel)){bar.innerHTML=cfg.conds.map(c=>`<div class="cond"><i>✓</i><span>${c.label}</span></div>`).join('');bar.dataset.level=String(currentLevel);S.prev=[]}
+    [...bar.children].forEach((d,i)=>{const ok=!!status[i];if(ok&&!S.prev[i]&&!silent){d.classList.remove('pop');void d.offsetWidth;d.classList.add('pop');sfx('ok')}d.classList.toggle('ok',ok);S.prev[i]=ok})}
+
+  /* ---------- 라운드 흐름: briefing → staging → ready → chaos → capture → result ---------- */
+  function levelKicker(){return cfg.scene+' · 사진 '+currentLevel+'/3 · '+difficulties[difficulty].label}
+  function enterLevel(skipBrief){
+    cfg=LEVELS[currentLevel-1];phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
+    $('#levelBadge').textContent=cfg.scene+' '+currentLevel+'/3';$('#stage').style.backgroundImage=`url('${cfg.bg}')`;
+    pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
+    $('#condBar').innerHTML='';layoutStart();
+    $('#missionKicker').textContent=levelKicker();$('#missionTitle').textContent=cfg.title;$('#missionConds').innerHTML=cfg.conds.map((c,i)=>`<li><b>${i+1}</b>${c.label}</li>`).join('');
+    renderConds(evaluateConditions(cfg,measure(),stageAspect()),true);
+    if(skipBrief)beginStaging();else $('#missionIntro').classList.add('show')}
+  /* 배경은 cover: 세로 화면은 높이에 맞춰 좌우가 잘리고, 가로 화면은 너비에 맞춰 위아래가 잘린다 → 소파 앞 바닥선(이미지 80% 지점)의 화면 위치가 달라진다 */
+  function updateFloor(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;const imgH=Math.max(r.height,r.width*940/1672),off=(imgH-r.height)/2;FLOOR_FEET=Math.max(6,Math.min(30,100-(.80*imgH-off)/r.height*100))}
+  window.addEventListener('resize',updateFloor);
+  function layoutStart(){updateFloor();
+    memberEls().forEach(m=>{m.classList.remove('dragging','locked-member');m.removeAttribute('data-gag');m._bounce=false;delete m.dataset.locked;resetPose(m);m.style.removeProperty('--mv')});
+    for(const base of cfg.start){const jit=(Math.random()-.5)*4,lay=base.map(([id,x,y])=>[id,x+jit,y]);
+      lay.forEach(([id,x,y])=>placeInstant(el(id),x,y));
+      const unmet=evaluateConditions(cfg,measure(),stageAspect()).map((v,i)=>v?-1:i).filter(i=>i>=0);
+      if(unmet.length===1&&unmet[0]===cfg.startUnmet)return}
+    cfg.start[0].forEach(([id,x,y])=>placeInstant(el(id),x,y))}
+  function beginStaging(){$('#missionIntro').classList.remove('show');phase='staging';const t=now();S.stagingStart=t;S.lastRelease=t;S.metSince=0;S.touched=false;S.countShown=-1;
+    setCoach(currentLevel===1?'끌어서 옮기고, 톡 하면 포즈가 바뀌어요 👆':currentLevel===3?'한 명을 두 번 톡! 특수 자세가 나와요':'');sfx('go')}
+  function startReady(){phase='ready';S.readyUntil=now()+READY_NOTICE;setCoach('');toast('8초 동안 가족이 움직여요! 원할 때 찰칵!',true)}
+  function startChaos(auto){phase='chaos';S.chaosStart=now();S.rem=CHAOS_SECONDS;S.fired=[];S.pending=buildEvents(cfg,difficulty,(Math.random()*1e9)|0);S.timers=[];S.shown=0;S.cat=null;setCoach('');
+    if(auto)toast('가족이 지루해해요!',true);$('#timer').classList.add('danger')}
+  function releaseDrag(){if(!drag)return;drag.m.classList.remove('dragging');applyDepth(drag.m);drag=null}
+
+  function loop(){
+    if(phase!=='staging'&&phase!=='ready'&&phase!=='chaos')return;
+    const t=now(),st=evaluateConditions(cfg,measure(),stageAspect());renderConds(st);const all=st.every(Boolean);
+    if(all){if(!S.metSince)S.metSince=t}else S.metSince=0;const dragging=drag&&drag.moved;
+    if(phase==='staging'){const left=Math.max(0,STAGING_LIMIT-(t-S.stagingStart)),sec=Math.ceil(left);
+      if(left<=5&&sec!==S.countShown){$('#timer').textContent=sec;$('#timer').classList.add('danger');S.countShown=sec}
+      if(all&&S.touched&&!dragging&&t-S.metSince>=READY_HOLD&&t-S.lastRelease>=READY_HOLD)startReady();
+      else if(left<=0)startChaos(true)}
+    else if(phase==='ready'){if(dragging){phase='staging';S.metSince=0}else if(t>=S.readyUntil)startChaos(false)}
+    if(phase==='chaos')tickChaos(t)}
+  function tickChaos(t){const rem=CHAOS_SECONDS-(t-S.chaosStart);S.rem=rem;
+    const due=S.pending.filter(e=>rem<=e.at);S.pending=S.pending.filter(e=>rem>e.at);due.forEach(e=>fireEvent(e,rem));
+    const dt=S.timers.filter(x=>rem<=x.when);S.timers=S.timers.filter(x=>rem>x.when);dt.forEach(x=>x.fn(rem));
+    const shown=Math.max(1,Math.ceil(rem));if(shown!==S.shown){S.shown=shown;if(shown<=3){const b=$('#bigCount');b.textContent=shown;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}$('#timer').textContent=shown;sfx('tick')}
+    $('#shutter').style.setProperty('--heat',Math.max(0,Math.min(1,1-rem/CHAOS_SECONDS)).toFixed(2));
+    if(S.cat)pet.style.left=(-14+(CAT_POS.x+14)*Math.max(0,Math.min(1,(S.cat.at-rem)/.5)))+'%';
+    if(rem<=0){toast('시간 끝! 자동으로 찰칵',true);takePhoto()}}
+  setInterval(loop,40);
+
+  /* ---------- 사고 실행 ---------- */
+  function schedule(when,fn){S.timers.push({when,fn})}
+  /* hold 초 뒤 원래 자세로 복귀(손으로 잡고 있으면 놓을 때까지 잠깐 미룸) */
+  function restoreLater(m,prev,rem,hold){const back=(r)=>{if(phase!=='chaos')return;if(drag&&drag.m===m&&drag.moved){schedule(r-.25,back);return}delete m.dataset.accident;setPose(m,prev,true)};schedule(rem-hold,back)}
+  function lockMember(m,rem,sec){m.dataset.locked='1';m.classList.add('locked-member');schedule(rem-(sec||.8),()=>{delete m.dataset.locked;m.classList.remove('locked-member')})}
+  function applyPlan(plan,note){plan.forEach(c=>{const m=el(c.id);if(!m)return;
+      if(drag&&drag.m===m)releaseDrag();
+      if(c.reset){resetPose(m);bubble(m,'앗! 놀랐다',1400);return}
+      place(m,c.x,c.y);if(c.kind==='bump')bubble(m,'으악!',1200)});
+    if(note){const b=plan.find(c=>c.kind==='bump'||c.kind==='reset');if(b)toast(b.reset?NAMES[b.id]+' 자세가 풀렸다!':NAMES[b.id]+' 밀려났다!',true)}}
+  function logicalPlan(ev){return planMoves(cfg,measureLogical(),stageAspect(),ev,memberEls().filter(m=>m.dataset.locked).map(m=>m.dataset.id))}
+  function fireEvent(ev,rem){
+    if(ev.kind==='cat'){S.fired.push({ev,firedAt:rem});S.cat={at:rem};pet.src='assets/photo-cat.png';pet.style.display='block';pet.style.left='-14%';pet.style.bottom=(CAT_POS.y-8)+'%';toast(ev.bubble,true);sfx('boing');buzz(20);
+      /* 연쇄 반응: 고양이와 가장 가까운 최대 2명이 반응 포즈로 즉시 전환 (동생은 고양이 쪽으로 8~10% 이동) */
+      const reacts=catReactions(measureLogical(),stageAspect());
+      reacts.forEach(r=>{const m=el(r.id);if(!m)return;if(drag&&drag.m===m)releaseDrag();m.dataset.accident='cat_'+r.id;const prev=m.dataset.poseId;setPose(m,r.poseId,true);lockMember(m,rem,.8);restoreLater(m,prev,rem,CAT_HOLD);
+        if(r.dx){const lim=limitsFor(r.poseId,m.offsetWidth/stage.getBoundingClientRect().width*100,m.offsetHeight/stage.getBoundingClientRect().height*100,m._base);place(m,Math.max(lim.minX,Math.min(lim.maxX,parseFloat(m.style.left)+r.dx)),m._base)}});
+      if(reacts[0])bubble(el(reacts[0].id),'으악 고양이!',1400);
+      schedule(rem-.1,()=>applyPlan(logicalPlan(ev),true));return}
+    const m=el(ev.actor);if(!m)return;
+    if(drag&&drag.m===m&&drag.moved){if(!ev.postponed){ev.postponed=true;ev.at=rem-.4;S.pending.push(ev);return}releaseDrag()}
+    S.fired.push({ev,firedAt:rem});m.dataset.accident=ev.id;const prev=m.dataset.poseId;
+    setPose(m,ev.pose,true);if(ev.bubble)bubble(m,ev.bubble,1100);sfx('boing');buzz(ev.filler?8:20);
+    restoreLater(m,prev,rem,ev.hold||HOLD);
+    if(memberEls().filter(x=>x.dataset.role==='chaos').length>=2&&!S.duoToast){S.duoToast=true;toast('지금이야!',true)}
+    lockMember(m,rem,Math.min(.8,(ev.hold||HOLD)-.2));
+    const plan=ev.move||ev.bump?logicalPlan(ev):[];if(plan.length)applyPlan(plan,!!ev.bump)}
+
+  /* ---------- 드래그와 탭 (V1 모바일 방어 계승 + 탭/드래그 구분) ---------- */
+  /* 클릭 선택: 사각형(.hit)이 겹쳐도 '실제로 그려진 픽셀'이 있는 가장 앞 인물을 고른다 (앞사람의 투명한 모서리가 뒤 인물을 가로채지 않게) */
+  const alphaCache={};
+  function alphaAt(img,x,y){const r=img.getBoundingClientRect();if(!r.width||!img.naturalWidth)return 255;const key=img.src;let c=alphaCache[key];
+    if(!c){const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;const g=cv.getContext('2d',{willReadFrequently:true});try{g.drawImage(img,0,0);c=alphaCache[key]={g,w:cv.width,h:cv.height}}catch(_){return 255}}
+    const px=Math.floor((x-r.left)/r.width*c.w),py=Math.floor((y-r.top)/r.height*c.h);if(px<0||py<0||px>=c.w||py>=c.h)return 0;try{return c.g.getImageData(px,py,1,1).data[3]}catch(_){return 255}}
+  function pickMember(e){const hits=document.elementsFromPoint(e.clientX,e.clientY).filter(n=>n.classList&&n.classList.contains('hit')).map(n=>n.closest('.family-member')).filter(Boolean);
+    return hits.find(m=>alphaAt(m.querySelector('.char-img'),e.clientX,e.clientY)>24)||hits[0]||e.target.closest('.family-member')}
+  function beginDrag(e){if(phase!=='staging'&&phase!=='ready'&&phase!=='chaos')return;if(phase==='chaos'&&!DRAG_IN_CHAOS)return;const m=pickMember(e);if(!m||m.dataset.locked)return;
+    drag={m,sx:e.clientX,sy:e.clientY,t:performance.now(),moved:false,oy:(stage.getBoundingClientRect().bottom-e.clientY)/stage.getBoundingClientRect().height*100-(m._base||0)};   /* oy: 잡은 지점과 발 사이 거리 — 손가락이 화면 아래로 못 가도 발이 프레임 밖까지 내려간다 */m.setPointerCapture?.(e.pointerId);if(e.cancelable)e.preventDefault()}
+  function moveDrag(e){if(!drag)return;if(e.cancelable)e.preventDefault();
+    if(!drag.moved){if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<TAP_PX)return;drag.moved=true;drag.m.classList.add('dragging');setCoach('');if(phase==='ready'){phase='staging';S.metSince=0}}
+    /* 경계는 컨테이너 전체가 아니라 '현재 포즈의 눈에 보이는 영역(bbox)' 기준 */
+    const m=drag.m,r=stage.getBoundingClientRect(),pid=m.dataset.poseId,wc0=m.offsetWidth/r.width*100,hc0=m.offsetHeight/r.height*100;
+    const y=Math.max(minYFor(pid,hc0),Math.min(maxYFor(pid,hc0),(r.bottom-e.clientY)/r.height*100-drag.oy)),lim=limitsFor(pid,wc0,hc0,y),x=Math.max(lim.minX,Math.min(lim.maxX,(e.clientX-r.left)/r.width*100));place(m,x,y)}
+  function cyclePose(m){const id=m.dataset.id,role=m.dataset.role,next=role==='base'?WAVE[id]:role==='wave'?SPECIAL[id]:BASE[id];
+    setPose(m,next,true);bubble(m,POSE_META[next].label||'기본',800);sfx('boing')}
+  function endDrag(e){if(!drag)return;const d=drag;drag=null;const m=d.m;m.classList.remove('dragging');applyDepth(m);S.lastRelease=now();
+    const isTap=!d.moved&&e&&e.type==='pointerup'&&performance.now()-d.t<TAP_MS;
+    if(d.moved)S.touched=true;
+    /* 탭: base → wave → special → base. 사고 중인 인물은 무시 */
+    if(isTap&&!m.dataset.accident&&m.dataset.role!=='chaos'&&(phase==='staging'||phase==='ready'||phase==='chaos')){S.touched=true;setCoach('');cyclePose(m);
+      if(phase==='ready'){phase='staging';S.metSince=0}}}
+
+  /* ---------- 촬영 ---------- */
+  function snapshotMembers(){const sr=stage.getBoundingClientRect();return memberEls().map(m=>{const id=m.dataset.id,c=containerBox(m,sr),P=POSE_META[m.dataset.poseId];
+    return{id,poseId:m.dataset.poseId,poseRole:P.role,pose:P.file,x:parseFloat(m.style.left),y:m._base,box:{cx:c.cx,bottom:c.bottom,w:c.wc,h:c.hc,z:c.z},s:c.s}})}
+  function captureProps(){const sr=stage.getBoundingClientRect();if(getComputedStyle(pet).display==='none')return[];const r=pet.getBoundingClientRect();if(r.right<sr.left||r.left>sr.right)return[];return[{src:pet.getAttribute('src'),box:{cx:(r.left+r.width/2-sr.left)/sr.width*100,bottom:(sr.bottom-r.bottom)/sr.height*100,w:r.width/sr.width*100,h:r.height/sr.height*100,z:55}}]}
+  function takePhoto(){if(phase!=='staging'&&phase!=='ready'&&phase!=='chaos')return;
+    const wasChaos=phase==='chaos',T=wasChaos?Math.max(0,S.rem):CHAOS_SECONDS,A=stageAspect();
+    /* 스냅샷을 먼저 확정한 뒤 모든 사고 타이머를 정지한다 */
+    const ms=measure(),members=snapshotMembers(),props=captureProps();
+    phase='capture';S.timers=[];S.pending=[];if(drag){drag.m.classList.remove('dragging');drag=null}
+    const res=scoreSnapshot(cfg,ms,A,{catVisible:props.length>0&&!!S.cat});
+    $('#bigCount').classList.remove('show');setCoach('');$('#timer').classList.remove('danger');
+    const t=makeTitle(res,roundNo++);
+    const isBest=res.total>best;if(isBest){best=res.total;store.set(KEY.best,best);$('#best').textContent=best.toLocaleString()}
+    const record={version:2,score:res.total,scoreParts:{comp:res.comp,moment:res.moment,chaos:res.chaos},rarity:res.rarity,events:res.events,title:t.title,caption:t.title,comment:t.comment,compRate:res.compRate,staged:res.staged,remaining:+T.toFixed(2),members,props,level:currentLevel,scene:cfg.scene,bg:cfg.bg,sticker:RARITY[res.rarity].icon+' '+RARITY[res.rarity].label,stageRatio:stage.clientWidth/stage.clientHeight,stamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}),difficulty};
+    sfx('shutter');buzz(res.rarity==='legend'||res.rarity==='disaster'?[40,40,80]:30);
+    const f=$('#flash');f.classList.remove('fire');void f.offsetWidth;f.classList.add('fire');
+    setTimeout(()=>showResult(record,isBest),150)}  /* 0.15초 프리즈 프레임 후 인화 */
+
+  /* ---------- 결과 ---------- */
+  /* 신버전 기록은 poseId 로, 구버전 기록은 pose 경로/상태로 이미지를 재구성한다 */
+  function poseSrc(p){if(p.poseId&&POSE_META[p.poseId])return POSE_META[p.poseId].file;return p.pose||(p.state?legacyAction[p.id]:legacyPortraits[p.id])}
+  function scenePhoto(scene,record){scene.innerHTML='';scene.classList.remove('effect-shake','effect-over');if(record.effect==='shake')scene.classList.add('effect-shake');if(record.effect==='over')scene.classList.add('effect-over');
+    record.members.forEach(p=>{const img=document.createElement('img');img.src=poseSrc(p);img.alt=NAMES[p.id];
+      if(p.box){img.className='mini-image faithful-image';img.style.left=p.box.cx+'%';img.style.bottom=p.box.bottom+'%';img.style.width=p.box.w+'%';img.style.height=p.box.h+'%';img.style.zIndex=String(p.box.z||10)}
+      else{img.className='mini-image '+p.id;const actualX=Number.isFinite(Number(p.x))?Number(p.x):legacyX[p.id];img.style.left=Math.max(14,Math.min(86,actualX))+'%';img.style.bottom='1%';img.style.width='22%';img.style.height='70%';img.style.zIndex='10'}
+      scene.appendChild(img)});
+    if(record.effect==='finger'){const finger=document.createElement('div');finger.className='finger-block';scene.appendChild(finger)}
+    if(record.effect&&record.effect!=='none'){const stamp=document.createElement('div');stamp.className='effect-stamp';stamp.textContent={shake:'흔들림 주의',finger:'손가락 출연',over:'플래시 폭발'}[record.effect]||'';scene.appendChild(stamp)}
+    const cap=document.createElement('div');cap.className='photo-caption';cap.textContent=record.title||record.caption||'';scene.appendChild(cap);return cap}
+  function renderProps(scene,record){(record.props||[]).forEach(p=>{const img=document.createElement('img');img.src=p.src;img.alt='사진에 끼어든 반려동물';img.className='mini-image faithful-image';img.style.left=p.box.cx+'%';img.style.bottom=p.box.bottom+'%';img.style.width=p.box.w+'%';img.style.height=p.box.h+'%';img.style.zIndex=String(p.box.z);scene.appendChild(img)})}
+  function countUp(elm,to,ms,done){const t0=performance.now();let last=-1;(function step(t){const k=Math.min(1,(t-t0)/ms),v=Math.round(to*(1-Math.pow(1-k,3)));elm.textContent=v.toLocaleString();if(v!==last&&k<1&&v%2===0)sfx('score');last=v;if(k<1)requestAnimationFrame(step);else if(done)done()})(t0)}
+  const later=(fn,ms)=>resultTimers.push(setTimeout(fn,ms));
+  function showResult(rec,isBest){
+    resultTimers.forEach(clearTimeout);resultTimers=[];
+    const scene=$('#photoScene'),box=$('#photoBox'),stamp=$('#stamp');
+    box.style.setProperty('--r',String(rec.stageRatio));show('result');
+    const wrapW=Math.min(560,$('#result').clientWidth*.94)-20;box.style.setProperty('--ph',Math.max(180,Math.min(innerHeight*(innerHeight<700?.5:.52),wrapW/rec.stageRatio))+'px');
+    scene.classList.remove('develop');box.classList.remove('shake');scene.style.backgroundImage=`url('${rec.bg}')`;const cap=scenePhoto(scene,rec);renderProps(scene,rec);
+    stamp.className='stamp '+rec.rarity;stamp.textContent=rec.rarity==='legend'?'👑 '+RARITY.legend.label:RARITY[rec.rarity].label;
+    ['#scComp','#scMoment','#scChaos','#scTotal'].forEach(s=>$(s).textContent='0');$('#newBest').textContent='';$('#resultComment').textContent=rec.comment||'';
+    $('#nextBtn').textContent=currentLevel>=3?'다음 사진 (앨범 완성)':'다음 사진';
+    void scene.offsetWidth;scene.classList.add('develop');
+    later(()=>cap.classList.add('in'),650);
+    later(()=>{stamp.classList.add('slam');if(rec.rarity==='disaster'||rec.rarity==='legend'){stamp.classList.add('big');box.classList.add('shake')}sfx('stamp');if(rec.rarity!=='normal')buzz([30,30,60])},950);
+    later(()=>countUp($('#scComp'),rec.scoreParts.comp,420,()=>countUp($('#scMoment'),rec.scoreParts.moment,420,()=>countUp($('#scChaos'),rec.scoreParts.chaos,420,()=>countUp($('#scTotal'),rec.score,520,()=>{if(isBest)$('#newBest').textContent='🏆 새로운 최고 기록!'})))),1500);
+    savePhoto(rec)}
+
+  /* ---------- 앨범·저장 ---------- */
+  function loadPhotos(){try{return JSON.parse(store.get(KEY.gallery,'[]'))}catch{return[]}}
+  function savePhoto(record){const list=loadPhotos();list.unshift(record);try{localStorage.setItem(KEY.gallery,JSON.stringify(list.slice(0,12)))}catch{}renderGallery()}
+  function renderGallery(){const list=loadPhotos(),grid=$('#galleryGrid');$('#galleryCount').textContent=list.length+'장';grid.innerHTML='';
+    if(!list.length){grid.innerHTML='<div class="gallery-empty">아직 사진이 없어요.<br>멋지게 망쳐보세요!</div>';return}
+    list.forEach((r,i)=>{const card=document.createElement('article');card.className='gallery-card';card.style.setProperty('--tilt',`${i%2?-1.3:1.1}deg`);
+      const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');card.appendChild(scene);
+      const v2=r.version===2,rar=v2&&RARITY[r.rarity];if(rar){const st=document.createElement('div');st.className='album-sticker '+r.rarity;st.textContent=rar.icon+' '+rar.label;card.appendChild(st)}else if(r.sticker){const st=document.createElement('div');st.className='album-sticker';st.textContent=r.sticker;card.appendChild(st)}
+      const foot=document.createElement('footer');foot.innerHTML=`<span>${r.scene||'거실'} ${r.level||1}/${v2?3:9}</span><span>${Number(r.score||0).toLocaleString()}점</span>`;card.appendChild(foot);grid.appendChild(card)})}
+  function abortRound(){phase='idle';S.timers=[];S.pending=[];drag=null;pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('')}
+  function openGallery(){galleryReturn=screens.result.classList.contains('active')?'result':screens.game.classList.contains('active')?'game':screens.complete.classList.contains('active')?'complete':'title';if(galleryReturn==='game')abortRound();renderGallery();show('gallery')}
+  function closeGallery(){if(galleryReturn==='result')show('result');else if(galleryReturn==='game')enterLevel();else show(galleryReturn)}
+  function advance(){resultTimers.forEach(clearTimeout);if(currentLevel>=3){store.set(KEY.level,'1');currentLevel=1;show('complete');return}currentLevel++;store.set(KEY.level,String(currentLevel));enterLevel()}
+  function retry(){resultTimers.forEach(clearTimeout);enterLevel(true)}
+  function setDifficulty(v){if(!difficulties[v])v='normal';difficulty=v;store.set(KEY.diff,v);$$('.difficulty button').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===v));$('#startBtn').textContent=difficulties[v].button}
+  $$('.difficulty button').forEach(b=>b.addEventListener('click',()=>setDifficulty(b.dataset.difficulty)));setDifficulty(difficulty);
+  $('#startBtn').addEventListener('click',async()=>{sfx('go');await preloadDone;enterLevel()});$('#missionStart').addEventListener('click',beginStaging);$('#nextBtn').addEventListener('click',advance);$('#retryBtn').addEventListener('click',retry);
+  $('#shutter').addEventListener('click',takePhoto);
+  stage.addEventListener('pointerdown',beginDrag);window.addEventListener('pointermove',moveDrag,{passive:false});window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
+  $$('.open-gallery').forEach(b=>b.addEventListener('click',openGallery));$('#closeGallery').addEventListener('click',closeGallery);
+  $('#completeAlbum').addEventListener('click',openGallery);$('#completeAgain').addEventListener('click',()=>{currentLevel=1;store.set(KEY.level,'1');enterLevel()});
+  memberEls().forEach(m=>{m._base=0;resetPose(m)});
+  renderGallery();
+  /* 자동 검증(tools/e2e_check.js)용 읽기 전용 훅 */
+  window.__game={get phase(){return phase},get S(){return S},get cfg(){return cfg},get dragId(){return drag&&drag.m.dataset.id},get dragMoved(){return !!(drag&&drag.moved)},get preloaded(){return preloadDone},measure,measureLogical,evaluateConditions,boxes:()=>{const sr=stage.getBoundingClientRect();return memberEls().map(m=>Object.assign({id:m.dataset.id,poseId:m.dataset.poseId},containerBox(m,sr)))}};
+</script>
+</body>
+</html>

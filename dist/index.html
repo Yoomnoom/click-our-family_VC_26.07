@@ -127,7 +127,12 @@
     /* 구버전(V1) 앨범 기록 렌더링용 */
     .photo-scene.effect-shake .mini-image{filter:blur(1.8px) drop-shadow(6px 0 0 #e9685866)}.photo-scene.effect-over{filter:brightness(1.45) contrast(.82) saturate(.75)}.finger-block{position:absolute;width:32%;height:48%;right:-13%;top:-15%;border-radius:48% 52% 60% 42%;background:#c76d58dd;filter:blur(3px);z-index:60;transform:rotate(-20deg)}.effect-stamp{position:absolute;right:3%;bottom:3%;z-index:70;background:#ef6558;color:#fff;border:3px solid #fff;border-radius:10px;padding:3px 8px;font-family:'Gaegu';font-size:clamp(12px,2vh,22px);font-weight:900;transform:rotate(-7deg)}
     /* ===== 거실 앨범 완성 ===== */
-    .complete-screen{align-items:center;justify-content:center;background:#f9ebc7;padding:5%}.complete-card{width:min(520px,92%);background:#fff7df;border:8px solid #f8d28a;box-shadow:0 0 0 4px #963d36,0 18px 0 #8f3f39;border-radius:20px;padding:8% 6%;text-align:center}.complete-emoji{font-size:clamp(48px,9vh,90px)}.complete-card h2{font-family:'Gaegu';font-size:clamp(40px,7vh,72px);margin:.1em 0;color:#d84d44;line-height:1}.complete-card p{font-weight:800;margin:6px 0 20px;color:#76584e;word-break:keep-all}.complete-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
+    /* 완성: 그림(제목·버튼 포함) 위에 같은 자리의 투명 버튼을 겹친다. 좌표는 이미지 대비 % */
+    .complete-screen{align-items:center;justify-content:center;background:#f9ebc7;padding:0}
+    .complete-hero .complete-btn{background:transparent;border:0;border-radius:999px;height:10%;top:74.7%}.complete-hero .complete-btn:focus-visible{outline:.4cqw solid #fff;outline-offset:.2cqw;box-shadow:0 0 0 .7cqw #d84d44}
+    .complete-hero #completeAlbum{left:45%;width:23.1%}.complete-hero #completeAgain{left:69.4%;width:22%}
+    @media(max-aspect-ratio:1.25/1){.complete-hero .complete-btn{height:7.2%}.complete-hero #completeAlbum{left:10.6%;top:77.9%;width:78.4%}.complete-hero #completeAgain{left:12.5%;top:86.7%;width:74.6%;height:6.9%}}
+    .complete-card{width:min(520px,92%);background:#fff7df;border:8px solid #f8d28a;box-shadow:0 0 0 4px #963d36,0 18px 0 #8f3f39;border-radius:20px;padding:8% 6%;text-align:center}.complete-emoji{font-size:clamp(48px,9vh,90px)}.complete-card h2{font-family:'Gaegu';font-size:clamp(40px,7vh,72px);margin:.1em 0;color:#d84d44;line-height:1}.complete-card p{font-weight:800;margin:6px 0 20px;color:#76584e;word-break:keep-all}.complete-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
     /* 세로 화면(폰·태블릿): 가족 크기를 동일하게 고정 → 조건 판정과 시뮬레이션 기준(SIZE)이 일치 */
     @media(max-aspect-ratio:1.25/1){.game-shell{width:100vw;height:100vh}.album{width:86%}.gallery-grid{grid-template-columns:repeat(2,1fr)}
       .family-member{height:58%;bottom:2%}.shutter{width:72px;right:3%;bottom:3%}
@@ -175,7 +180,7 @@
   </div></section>
   <div id="zoomBox" class="zoom-box" aria-label="사진 확대 (아무 곳이나 누르면 닫힘)"></div>
   <section id="gallery" class="screen gallery-screen"><div class="gallery-head"><h2><span id="galleryTitle">우리 가족 오늘의 앨범</span> <span id="galleryCount" class="gallery-count">0장</span></h2><button id="closeGallery" class="close-gallery">돌아가기</button></div><p id="galleryCopy" class="gallery-copy">완벽한 사진보다 웃긴 사진이 오래 남습니다. 최근 12장을 기기에 보관합니다.</p><div id="galleryTools" class="gallery-tools" hidden><button id="selAll" class="gt-btn" type="button">전체 선택</button><button id="dlSel" class="gt-btn" type="button" disabled>선택 다운로드</button><button id="delSel" class="gt-btn" type="button" disabled>선택 삭제</button><button id="resetAlbum" class="gt-btn gt-reset" type="button">새로고침 · 모두 지우기</button></div><div id="galleryGrid" class="gallery-grid"></div></section>
-  <section id="complete" class="screen complete-screen"><div class="complete-card"><div class="complete-emoji">🏠📸</div><h2>가족 앨범 완성!</h2><p>거실·생일 파티·캠핑장 3장 완성</p><div class="complete-actions"><button id="completeAlbum" class="next-btn main-btn">가족 앨범 보기</button><button id="completeAgain" class="next-btn sub-btn">처음부터 다시 찍기</button></div></div></section>
+  <section id="complete" class="screen complete-screen"><div class="hero complete-hero"><picture><source media="(max-aspect-ratio:1.25/1)" srcset="assets/main/complete-portrait.jpg"><img src="assets/main/complete-landscape.jpg" alt="가족 앨범 완성 — 벚꽃 공원에서 포즈를 취한 가족"></picture><button id="completeAlbum" class="complete-btn" aria-label="가족 앨범 보기"></button><button id="completeAgain" class="complete-btn" aria-label="처음부터 다시 찍기"></button></div></section>
   <div id="flash" class="flash"></div>
 </section></main>
 
@@ -246,7 +251,7 @@ const CONDS={
 };
 function evaluateConditions(lv,ms,A){return lv.conds.map(c=>!!CONDS[c.type](c,ms,A||A_DEFAULT))}
 
-/* ----- 레벨 데이터 (거실 3레벨, V2.2 타임라인) ----- */
+/* ----- 레벨 데이터 (6레벨: 거실·생일 파티·캠핑장·벚꽃 공원·해변 테라스·할머니 댁, V2.2 타임라인) ----- */
 const LEVELS=[
  {id:'living1',scene:'거실',title:'첫 가족사진',bg:'assets/poses/living-room2.png',floor:.80,
   conds:[{type:'faces',min:3,label:'얼굴 3개 보이기'},{type:'big',ratio:1.12,label:'한 명은 크게 앞으로'}],
@@ -279,7 +284,39 @@ const LEVELS=[
   rarity:{funny:70,disaster:260,legend:460},
   startUnmet:1,
   start:[[['mom',50,18],['dad',18,8],['sis',66,10],['bro',50,5]],[['mom',48,18],['dad',17,9],['sis',68,9],['bro',52,6]]],
-  canon:[['mom',50,18],['dad',18,8],['sis',66,10,'sis-p6'],['bro',50,-4]]}
+  canon:[['mom',50,18],['dad',18,8],['sis',66,10,'sis-p6'],['bro',50,-4]]},
+ {id:'park4',scene:'벚꽃 공원',title:'동생 옆에 꼭 붙어요',bg:'assets/poses/cherry-blossom-park.png',floor:.84,
+  conds:[{type:'faces',min:4,label:'얼굴 4개 모두 보이기'},{type:'close',a:'sis',b:'bro',max:.2,label:'누나·동생 꼭 붙기'}],
+  chaos:[
+   {id:'sisPhone',at:2.3,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
+   {id:'broRun',at:1.0,actor:'bro',pose:'bro-p4',move:{dxs:[-40,-32,-24,-16,16,24,32,40]},bump:true,bubble:'동생이 도망가요!'}],
+  extra:{id:'dadEyes',at:1.7,actor:'dad',pose:'dad-p4',bubble:'아빠 눈 감는다!'},
+  rarity:{funny:70,disaster:260,legend:99999},
+  startUnmet:1,
+  start:[[['mom',16,12],['dad',38,14],['sis',58,12],['bro',84,13]],[['mom',18,13],['dad',40,12],['sis',62,14],['bro',86,12]]],
+  canon:[['mom',18,12],['dad',40,14],['sis',64,12],['bro',80,10]]},
+ {id:'beach5',scene:'해변 테라스',title:'엄마는 동생 뒤로',bg:'assets/poses/beach.png',floor:.86,
+  conds:[{type:'behind',back:'mom',front:'bro',gap:2.5,label:'엄마는 동생 뒤로!'},{type:'special',min:1,label:'한 명은 특수 자세'}],
+  chaos:[
+   {id:'sisPhone',at:2.3,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
+   {id:'momRush',at:1.1,actor:'mom',pose:'mom-p4',move:{dxs:[-42,-34,-26,-20,-14,14,20,26,34,42]},bump:true,bubble:'엄마 급하게 달려요!'}],
+  extra:{id:'dadSneeze',at:1.8,actor:'dad',pose:'dad-p1',bubble:'아빠 에취!'},
+  rarity:{funny:70,disaster:260,legend:99999},
+  startUnmet:1,
+  start:[[['mom',40,16],['dad',66,12],['sis',16,10],['bro',48,8]],[['mom',42,15],['dad',68,11],['sis',18,9],['bro',50,7]]],
+  canon:[['mom',40,16],['dad',66,12],['sis',16,10,'sis-p6'],['bro',48,8]]},
+ {id:'house6',scene:'할머니 댁',title:'온 가족 마지막 사진',bg:'assets/poses/grandparents-house.png',floor:.88,
+  conds:[{type:'triangle',minArea:.037,minSide:.1,label:'삼각 구도 만들기'},{type:'close',a:'mom',b:'dad',max:.22,label:'엄마 아빠 꼭 붙기'}],
+  chaos:[
+   {id:'dadEyes',at:2.2,actor:'dad',pose:'dad-p4',bubble:'아빠 눈 감는다!'},
+   {id:'broJump',at:1.4,actor:'bro',pose:'bro-p4',move:{dxs:[-20,-14,14,20],dys:[0,12,20,28]},bump:true,bubble:'동생 날아간다!'},
+   {id:'cat',at:.8,kind:'cat',catchAfter:.15,bump:'always',bubble:'고양이가 온다!'}],
+  extra:{id:'sisPhone',at:1.2,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
+  dropSecond:true,
+  rarity:{funny:70,disaster:260,legend:460},
+  startUnmet:0,
+  start:[[['mom',30,10],['dad',42,10],['sis',60,10],['bro',78,10]],[['mom',32,11],['dad',44,9],['sis',62,11],['bro',80,9]]],
+  canon:[['mom',46,18],['dad',58,14],['sis',22,8],['bro',76,-4]]}
 ];
 const DUO_BONUS=120,CAT_BONUS=300;
 const RARITY={normal:{label:'평범한 한 장',icon:'📷'},funny:{label:'제법 웃김',icon:'😆'},disaster:{label:'대참사',icon:'💥'},legend:{label:'전설의 가족사진',icon:'👑'}};
@@ -417,7 +454,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   const KEY={level:'familyPhotoV2Level',best:'familyPhotoV2Best',diff:'familyPhotoDifficulty',gallery:'familyPhotoGallery',mute:'familyPhotoMuted'};
   const TAP_PX=6,TAP_MS=250,DRAG_IN_CHAOS=true;
   const store={get:(k,d)=>{try{return localStorage.getItem(k)??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
-  let currentLevel=Math.max(1,Math.min(3,Number(store.get(KEY.level,1))||1)),difficulty=store.get(KEY.diff,'normal'),best=Number(store.get(KEY.best,0))||0;
+  let currentLevel=Math.max(1,Math.min(LEVELS.length,Number(store.get(KEY.level,1))||1)),difficulty=store.get(KEY.diff,'normal'),best=Number(store.get(KEY.best,0))||0;
   let phase='title',cfg=LEVELS[0],S={fired:[],pending:[],timers:[],prev:[]},drag=null,galleryReturn='title',roundNo=0,resultTimers=[],muted=store.get(KEY.mute,'0')==='1';
   const stage=$('#stage'),pet=$('#photoPet');
   $('#best').textContent=best.toLocaleString();
@@ -426,7 +463,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   const memberEls=()=>$$('.family-member');
   /* 포즈 24장 + 고양이·배경 프리로드(decode 까지) — 사고 중 포즈 교체에서 빈 프레임이 보이면 안 된다 */
   const keepAlive=[];
-  const preloadDone=Promise.all([...Object.values(POSE_META).map(p=>p.file),'assets/photo-cat.png','assets/poses/living-room2.png','assets/poses/birthday-room.png','assets/poses/campsite.png','assets/living-room.png'].map(src=>new Promise(res=>{const i=new Image();keepAlive.push(i);i.onerror=()=>res(false);i.src=src;(i.decode?i.decode():Promise.resolve()).then(()=>res(true),()=>res(false))})));
+  const preloadDone=Promise.all([...Object.values(POSE_META).map(p=>p.file),'assets/photo-cat.png','assets/poses/living-room2.png','assets/poses/birthday-room.png','assets/poses/campsite.png','assets/poses/cherry-blossom-park.png','assets/poses/beach.png','assets/poses/grandparents-house.png','assets/main/complete-landscape.jpg','assets/main/complete-portrait.jpg','assets/living-room.png'].map(src=>new Promise(res=>{const i=new Image();keepAlive.push(i);i.onerror=()=>res(false);i.src=src;(i.decode?i.decode():Promise.resolve()).then(()=>res(true),()=>res(false))})));
 
   /* ---------- 소리·진동 (외부 파일 없이 합성) ---------- */
   let actx=null;
@@ -475,10 +512,10 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
     [...bar.children].forEach((d,i)=>{const ok=!!status[i];if(ok&&!S.prev[i]&&!silent){d.classList.remove('pop');void d.offsetWidth;d.classList.add('pop');sfx('ok')}d.classList.toggle('ok',ok);S.prev[i]=ok})}
 
   /* ---------- 라운드 흐름: briefing → staging → ready → chaos → capture → result ---------- */
-  function levelKicker(){return cfg.scene+' · 사진 '+currentLevel+'/3 · '+difficulties[difficulty].label}
+  function levelKicker(){return cfg.scene+' · 사진 '+currentLevel+'/'+LEVELS.length+' · '+difficulties[difficulty].label}
   function enterLevel(skipBrief){
     cfg=LEVELS[currentLevel-1];phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
-    $('#levelBadge').textContent=cfg.scene+' '+currentLevel+'/3';$('#stage').style.backgroundImage=`url('${cfg.bg}')`;
+    $('#levelBadge').textContent=cfg.scene+' '+currentLevel+'/'+LEVELS.length;$('#stage').style.backgroundImage=`url('${cfg.bg}')`;
     pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
     $('#condBar').innerHTML='';layoutStart();
     $('#missionKicker').textContent=levelKicker();$('#missionTitle').textContent=cfg.title;$('#missionConds').innerHTML=cfg.conds.map((c,i)=>`<li><b>${i+1}</b>${c.label}</li>`).join('');
@@ -495,7 +532,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
       if(unmet.length===1&&unmet[0]===cfg.startUnmet)return}
     cfg.start[0].forEach(([id,x,y])=>placeInstant(el(id),x,y))}
   function beginStaging(){$('#missionIntro').classList.remove('show');phase='staging';const t=now();S.stagingStart=t;S.lastRelease=t;S.metSince=0;S.touched=false;S.countShown=-1;
-    setCoach(currentLevel===1?'끌어서 옮기고, 톡 하면 포즈가 바뀌어요 👆':currentLevel===3?'한 명을 두 번 톡! 특수 자세가 나와요':'');sfx('go')}
+    setCoach(currentLevel===1?'끌어서 옮기고, 톡 하면 포즈가 바뀌어요 👆':cfg.conds.some(c=>c.type==='special')?'한 명을 두 번 톡! 특수 자세가 나와요':'');sfx('go')}
   function startReady(){phase='ready';S.readyUntil=now()+READY_NOTICE;setCoach('');toast('8초 동안 가족이 움직여요! 원할 때 찰칵!',true)}
   function startChaos(auto){phase='chaos';S.chaosStart=now();S.rem=CHAOS_SECONDS;S.fired=[];S.pending=buildEvents(cfg,difficulty,(Math.random()*1e9)|0);S.timers=[];S.shown=0;S.cat=null;setCoach('');
     if(auto)toast('가족이 지루해해요!',true);$('#timer').classList.add('danger')}
@@ -612,7 +649,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
     scene.classList.remove('develop');box.classList.remove('shake');scene.style.backgroundImage=`url('${rec.bg}')`;const cap=scenePhoto(scene,rec);renderProps(scene,rec);
     stamp.className='stamp '+rec.rarity;stamp.textContent=rec.rarity==='legend'?'👑 '+RARITY.legend.label:RARITY[rec.rarity].label;
     ['#scComp','#scMoment','#scChaos','#scTotal'].forEach(s=>$(s).textContent='0');$('#newBest').textContent='';$('#resultComment').textContent=rec.comment||'';
-    $('#nextBtn').textContent=currentLevel>=3?'다음 사진 (앨범 완성)':'다음 사진';
+    $('#nextBtn').textContent=currentLevel>=LEVELS.length?'다음 사진 (앨범 완성)':'다음 사진';
     void scene.offsetWidth;scene.classList.add('develop');
     later(()=>cap.classList.add('in'),650);
     later(()=>{stamp.classList.add('slam');if(rec.rarity==='disaster'||rec.rarity==='legend'){stamp.classList.add('big');box.classList.add('shake')}sfx('stamp');if(rec.rarity!=='normal')buzz([30,30,60])},950);
@@ -654,15 +691,15 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
       
       const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');const frame=document.createElement('div');frame.className='gallery-frame';frame.appendChild(scene);card.appendChild(frame);card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','사진 크게 보기');card.addEventListener('click',()=>zoomPhoto(r));card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();zoomPhoto(r)}});
       const v2=r.version===2,rar=v2&&RARITY[r.rarity];if(rar){const st=document.createElement('div');st.className='album-sticker '+r.rarity;st.textContent=rar.icon+' '+rar.label;card.appendChild(st)}else if(r.sticker){const st=document.createElement('div');st.className='album-sticker';st.textContent=r.sticker;card.appendChild(st)}
-      const foot=document.createElement('footer');foot.innerHTML=`<span>${r.scene||'거실'} ${r.level||1}/${v2?3:9}</span><span>${Number(r.score||0).toLocaleString()}점</span>`;card.appendChild(foot);
+      const foot=document.createElement('footer');foot.innerHTML=`<span>${r.scene||'거실'} ${r.level||1}/${v2?LEVELS.length:9}</span><span>${Number(r.score||0).toLocaleString()}점</span>`;card.appendChild(foot);
       const cb=document.createElement('input');cb.type='checkbox';cb.className='gallery-sel';cb.setAttribute('aria-label','사진 선택');['click','keydown','pointerdown'].forEach(ev=>cb.addEventListener(ev,e=>e.stopPropagation()));cb.addEventListener('change',()=>{cb.checked?sel.add(i):sel.delete(i);updateTools(list.length)});card.appendChild(cb);grid.appendChild(card)})}
   function zoomPhoto(r){const box=$('#zoomBox');box.innerHTML='';const wrap=document.createElement('div');wrap.className='zoom-photo';const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');wrap.appendChild(scene);
-    const rar=r.version===2&&RARITY[r.rarity];const foot=document.createElement('div');foot.className='zoom-foot';foot.textContent=`${rar?rar.icon+' '+rar.label+' · ':''}${r.scene||'거실'} ${r.level||1}/3 · ${Number(r.score||0).toLocaleString()}점`;wrap.appendChild(foot);box.appendChild(wrap);box.classList.add('open');wrap.style.setProperty('--r',String(r.stageRatio||.5))}
+    const rar=r.version===2&&RARITY[r.rarity];const foot=document.createElement('div');foot.className='zoom-foot';foot.textContent=`${rar?rar.icon+' '+rar.label+' · ':''}${r.scene||'거실'} ${r.level||1}/${LEVELS.length} · ${Number(r.score||0).toLocaleString()}점`;wrap.appendChild(foot);box.appendChild(wrap);box.classList.add('open');wrap.style.setProperty('--r',String(r.stageRatio||.5))}
   function closeZoom(){$('#zoomBox').classList.remove('open')}
   function abortRound(){phase='idle';S.timers=[];S.pending=[];drag=null;pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('')}
   function openGallery(){galleryReturn=screens.result.classList.contains('active')?'result':screens.game.classList.contains('active')?'game':screens.complete.classList.contains('active')?'complete':'title';if(galleryReturn==='game')abortRound();renderGallery();show('gallery')}
   function closeGallery(){if(galleryReturn==='result')show('result');else if(galleryReturn==='game')enterLevel();else show(galleryReturn)}
-  function advance(){resultTimers.forEach(clearTimeout);if(currentLevel>=3){store.set(KEY.level,'1');currentLevel=1;show('complete');return}currentLevel++;store.set(KEY.level,String(currentLevel));enterLevel()}
+  function advance(){resultTimers.forEach(clearTimeout);if(currentLevel>=LEVELS.length){store.set(KEY.level,'1');currentLevel=1;show('complete');return}currentLevel++;store.set(KEY.level,String(currentLevel));enterLevel()}
   function retry(){resultTimers.forEach(clearTimeout);enterLevel(true)}
   function setDifficulty(v){if(!difficulties[v])v='normal';difficulty=v;store.set(KEY.diff,v);$$('.difficulty button').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===v));$('#startBtn').textContent=difficulties[v].button}
   $$('.difficulty button').forEach(b=>b.addEventListener('click',()=>setDifficulty(b.dataset.difficulty)));setDifficulty(difficulty);

@@ -207,8 +207,8 @@ t('시작·정답 배치의 신발 바닥이 기본 바닥선(20) 안', L.LEVELS
       for (let i = 1; i < mine.length; i++) if (mine[i].pose === mine[i - 1].pose) bad.push(['연속같은포즈', lv0.id, sd, id]);
     });
   }
-  t('8초 일정: 어떤 두 행동도 0.45초 안에 겹쳐 시작하지 않음 · 8초 안 · hold ≥1초 · 인물별 간격 ≥1.5초 · 연속 같은 포즈 없음 (레벨 3개 × seed 300)', bad.length === 0, bad.slice(0, 5));
-  t('8초 일정: 각 가족이 한 판에 서로 다른 포즈를 2가지 이상 보이는 판이 65% 이상(억지로 다 보여주지 않음)', Object.values(variety).every(v => v / (seeds * 3) >= .65), variety);
+  t('8초 일정: 어떤 두 행동도 0.45초 안에 겹쳐 시작하지 않음 · 8초 안 · hold ≥1초 · 인물별 간격 ≥1.5초 · 연속 같은 포즈 없음 (전체 레벨 × seed 300)', bad.length === 0, bad.slice(0, 5));
+  t('8초 일정: 각 가족이 한 판에 서로 다른 포즈를 2가지 이상 보이는 판이 65% 이상(억지로 다 보여주지 않음)', Object.values(variety).every(v => v / (seeds * lvl.length) >= .65), variety);
 }
 t('8초 일정: 같은 seed 는 같은 일정(결정적)', JSON.stringify(L.buildEvents(lv(2), 'normal', 77)) === JSON.stringify(L.buildEvents(lv(2), 'normal', 77)) && JSON.stringify(L.buildEvents(lv(2), 'normal', 77)) !== JSON.stringify(L.buildEvents(lv(2), 'normal', 78)));
 t('복귀: 사고 포즈는 hold 초 안에만 보이고 그 뒤 시작 포즈로 돌아온다', (() => {

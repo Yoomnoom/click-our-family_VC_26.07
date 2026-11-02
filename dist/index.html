@@ -361,6 +361,19 @@ function scoreSnapshot(lv,ms,A,opt){opt=opt||{};
 
 /* ----- 사고가 구도를 무너뜨리는 결정적 계획 -----
    사고 인물·시점·포즈는 고정. 이동 '방향'만 현재 구도의 약한 고리를 깨는 쪽(충족 수 최소, 동률이면 최소 이동)으로 고른다. */
+/* ----- 갈 수 없는 곳: 사고로 밀리거나 달릴 때 발이 닿으면 안 되는 자리(소파·식탁·난간·벤치·물 등) -----
+   배경 그림 기준 비율 [x0,x1,y0,y1](발 위치). 화면 비율이 달라도 같은 곳을 피하도록 그림 좌표로 두고, 검사할 때 화면 좌표로 바꾼다. */
+const IMG_RATIO=1672/940;
+const BLOCKS={
+  living1:[[0,1,0,.76]],
+  living2:[[0,1,0,.76],[.6,1,.5,1]],
+  living3:[[0,1,0,.7],[.72,1,.68,1],[0,.27,.68,1]],
+  park4:[[0,1,0,.62],[.57,.91,0,.74],[0,.2,.62,.8],[.86,1,.6,.8]],
+  beach5:[[0,1,0,.76],[0,.25,.55,1],[.16,.31,.55,.87],[.62,1,.55,1]],
+  house6:[[0,1,0,.74],[0,.22,0,1],[.4,.81,.74,.93],[.85,1,.6,1]]};
+function footBlocked(lv,x,y,A){const zs=BLOCKS[lv&&lv.id];if(!zs)return false;const a=A||A_DEFAULT,ys=1-y/100;
+  const ix=a<IMG_RATIO?.5+(x/100-.5)*a/IMG_RATIO:x/100,iy=a<IMG_RATIO?ys:.5+(ys-.5)*IMG_RATIO/a;   /* 그림은 화면을 가득 채우게(cover) 가운데 정렬로 잘려 보인다 */
+  return zs.some(z=>ix>=z[0]&&ix<=z[1]&&iy>=z[2]&&iy<=z[3])}
 const BUMP_DX=[-22,-14,14,22],BUMP_DY=[0,10,18,26,-8];
 function planMoves(lv,ms,A,ev,locked){
   const avoid=new Set([...(ev.avoid||[]),...(locked||[])]);let cur=ms.map(m=>Object.assign({},m));const plan=[];
@@ -370,11 +383,12 @@ function planMoves(lv,ms,A,ev,locked){
   const put=c=>{cur=apply(cur,c);plan.push(c)};
   if(ev.move&&ev.actor){const a=byId(cur,ev.actor),yMax=maxYFor(a.poseId,a.hc0),cands=[];
     ev.move.dxs.forEach(dx=>(ev.move.dys||[0]).forEach(dy=>cands.push({id:a.id,x:a.x+dx,y:Math.max(minYFor(a.poseId,a.hc0),Math.min(yMax,a.y+dy)),cost:Math.abs(dx)+Math.abs(dy),kind:'actor'})));
-    const b=pick(cands);if(b)put(b.c)}
+    const b=pick(cands.filter(c=>!footBlocked(lv,c.x,c.y,A)));if(b)put(b.c)}
   if(ev.bump&&(ev.bump==='always'||met(cur)===lv.conds.length)){
     const cands=[];cur.forEach(v=>{if(v.id===ev.actor)return;const yMax=maxYFor(v.poseId,v.hc0);
       if(!avoid.has(v.id))BUMP_DX.forEach(dx=>BUMP_DY.forEach(dy=>{cands.push({id:v.id,x:v.x+dx,y:Math.max(minYFor(v.poseId,v.hc0),Math.min(yMax,v.y+dy)),cost:Math.abs(dx)+Math.abs(dy),kind:'bump'})}));
       if(v.role==='special'||v.role==='wave')cands.push({id:v.id,reset:true,cost:5,kind:'reset'})});
+    for(let i=cands.length-1;i>=0;i--)if(!cands[i].reset&&footBlocked(lv,cands[i].x,cands[i].y,A))cands.splice(i,1);
     const base=met(cur),b=pick(cands);
     if(b&&(ev.bump==='always'||b.n<base))put(b.c);
     else if(ev.bump===true){/* 한 명으로 안 깨지면 두 명을 연달아 밀친다 */

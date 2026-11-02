@@ -27,6 +27,25 @@
     .difficulty{display:flex;gap:7px;margin:0 0 16px;justify-content:center}.difficulty button{border:2px solid #d5aa59;background:#fff5cd;border-radius:14px;padding:7px 10px;font-weight:900;font-size:clamp(10px,1.5vh,15px);cursor:pointer;box-shadow:0 3px 0 #bf8d3e}.difficulty button.selected{background:#493735;color:#fff;border-color:#493735;transform:translateY(2px);box-shadow:0 1px 0 #2d2221}.difficulty button small{display:block;font-size:.68em;font-weight:700;opacity:.8;margin-top:2px}
     .title-sub{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center}.title-sub button,.title-sub span{border:2px solid #d5aa59;background:#fff5cd;border-radius:999px;padding:5px 12px;font-weight:900;font-size:clamp(10px,1.5vh,14px);cursor:pointer}.title-sub span.locked{opacity:.55;border-style:dashed;cursor:default;background:#efe3bd}
     .how{position:absolute;bottom:3%;font-size:clamp(10px,1.45vh,17px);font-weight:700;color:#744f49;word-break:keep-all}
+    /* 홈: 그림(제목·버튼 포함) 위에 같은 자리의 진짜 버튼을 겹친다. 좌표는 이미지 대비 % */
+    .hero{position:relative;width:min(100%,177.78vh);aspect-ratio:16/9;container-type:size;z-index:1}
+    .hero picture,.hero img{position:absolute;inset:0;width:100%;height:100%;display:block}
+    .hero button{position:absolute;margin:0;cursor:pointer;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;padding:0}
+    .hero .difficulty{display:contents}
+    .hero .difficulty button{top:56%;height:9.9%;width:9%;border:.18cqw solid #d5aa59;border-radius:1.3cqw;background:#fff1c8;box-shadow:0 .25cqw 0 #bf8d3e;font-size:1.5cqw;transform:none}
+    .hero .difficulty button small{font-size:.8cqw;font-weight:700;color:#6b5648;margin-top:.3cqw}
+    .hero .difficulty button[data-difficulty=easy]{left:62.6%}.hero .difficulty button[data-difficulty=normal]{left:72.5%;width:7.8%}.hero .difficulty button[data-difficulty=chaos]{left:81.2%}
+    .hero .difficulty button.selected{background:#493735;color:#fff;border-color:#493735;box-shadow:0 .1cqw 0 #2d2221}.hero .difficulty button.selected small{color:#e9ddd4}
+    .hero .start-btn{left:64.9%;top:67.7%;width:22.8%;height:8.6%;border-radius:999px;font-size:2.1cqw;padding:0;box-shadow:0 .45cqw 0 #a93d37}.hero .start-btn:active{transform:translateY(.3cqw);box-shadow:0 .12cqw 0 #a93d37}
+    .hero #titleAlbum{left:69.9%;top:78.1%;width:12.7%;height:5.3%;border:.18cqw solid #c9a24f;border-radius:999px;background:#fff8e6;font-size:1.4cqw}
+    @media(max-aspect-ratio:1.25/1){
+      .hero{width:min(100%,56.25vh);aspect-ratio:9/16}
+      .hero .difficulty button{top:77.3%;height:6.9%;width:22.6%;font-size:3.5cqw;border-radius:2.6cqw}
+      .hero .difficulty button small{font-size:2.3cqw;margin-top:.5cqw}
+      .hero .difficulty button[data-difficulty=easy]{left:13.8%}.hero .difficulty button[data-difficulty=normal]{left:38.8%;width:22.6%}.hero .difficulty button[data-difficulty=chaos]{left:63.4%}
+      .hero .start-btn{left:19.1%;top:85.5%;width:61.8%;height:6%;font-size:5cqw;box-shadow:0 1cqw 0 #a93d37}
+      .hero #titleAlbum{left:31.3%;top:92.8%;width:37.3%;height:4.2%;font-size:3.6cqw}
+    }
     /* ===== 게임 ===== */
     .game-screen{flex-direction:column;background:#f3e6cb}
     .hud{height:12%;min-height:48px;background:#fff8e9;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 3%;border-bottom:4px solid #c98663;z-index:20;box-shadow:0 4px 0 #5d413a25}
@@ -75,11 +94,11 @@
     .photo-caption{position:absolute;left:50%;top:3%;transform:translateX(-50%) rotate(-2deg);background:#fff47d;color:#49302b;border:3px solid #49302b;border-radius:12px;padding:4px 12px;font-family:'Gaegu',cursive;font-size:clamp(15px,2.6vh,28px);font-weight:900;text-align:center;line-height:1.1;width:max-content;max-width:90%;word-break:keep-all;text-wrap:balance;z-index:80}
     .result-screen .photo-caption{opacity:0}.result-screen .photo-caption.in{animation:cap-in .45s cubic-bezier(.2,1.5,.4,1) forwards}@keyframes cap-in{0%{opacity:0;transform:translateX(-50%) rotate(-2deg) scale(.4)}100%{opacity:1;transform:translateX(-50%) rotate(-2deg) scale(1)}}
     .date-stamp{position:absolute;right:5%;bottom:2.4%;font-family:monospace;color:#d65b46;font-weight:900;font-size:clamp(10px,1.6vh,17px)}
-    .stamp{position:absolute;left:50%;top:30%;z-index:90;width:max-content;white-space:normal;text-align:center;max-width:92%;word-break:keep-all;transform:translate(-50%,-50%) rotate(-12deg);padding:6px 16px;border:6px solid currentColor;border-radius:14px;font-family:'Gaegu',cursive;font-weight:900;font-size:clamp(28px,5vh,52px);line-height:1;opacity:0;pointer-events:none;background:#fff8e5cc;letter-spacing:-.02em}
-    .stamp.normal{color:#6b7f8f}.stamp.funny{color:#e0932f}.stamp.disaster{color:#d63d34}.stamp.legend{color:#b8860b;background:#fff3b0e6;font-size:clamp(24px,4.4vh,46px)}
+    .stamp{position:absolute;left:34%;top:95%;z-index:90;width:max-content;white-space:normal;text-align:center;max-width:64%;word-break:keep-all;transform:translate(-50%,-50%) rotate(-8deg);padding:3px 12px;border:4px solid currentColor;border-radius:12px;font-family:'Gaegu',cursive;font-weight:900;font-size:clamp(20px,3.4vh,36px);line-height:1;opacity:0;pointer-events:none;background:#fff8e5cc;letter-spacing:-.02em}
+    .stamp.normal{color:#6b7f8f}.stamp.funny{color:#e0932f}.stamp.disaster{color:#d63d34}.stamp.legend{color:#b8860b;background:#fff3b0e6;font-size:clamp(18px,3vh,32px)}
     .stamp.slam{animation:slam .42s cubic-bezier(.2,1.5,.4,1) forwards}.stamp.big.slam{animation:slam-big .6s cubic-bezier(.2,1.4,.4,1) forwards}
-    @keyframes slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(3)}65%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(.92)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
-    @keyframes slam-big{0%{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(4.2)}55%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(.88)}75%{transform:translate(-50%,-50%) rotate(-9deg) scale(1.08)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
+    @keyframes slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(3)}65%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(.92)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1)}}
+    @keyframes slam-big{0%{opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(4.2)}55%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(.88)}75%{transform:translate(-50%,-50%) rotate(-9deg) scale(1.08)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1)}}
     .result-info{width:100%;color:white;text-align:center;padding-bottom:2vh}
     .result-comment{min-height:2.6em;font-size:clamp(12px,1.9vh,18px);margin:4px auto 8px;color:#f3d8ca;word-break:keep-all;max-width:92%;font-weight:700}
     .score-rows{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 auto 6px;max-width:92%}
@@ -93,6 +112,14 @@
     .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:1% 1% 5%;align-items:start}
     .gallery-card{background:white;padding:8px 8px 34px;box-shadow:0 8px 18px #6b4d3a33;transform:rotate(var(--tilt));position:relative}.gallery-card .photo-scene{height:auto;width:100%;aspect-ratio:var(--r)}.gallery-card .photo-caption{font-size:clamp(11px,1.7vh,16px);padding:2px 7px;border-width:2px}
     .gallery-card footer{position:absolute;left:8px;right:8px;bottom:8px;display:flex;justify-content:space-between;gap:6px;font-size:clamp(9px,1.3vh,13px);font-weight:900;color:#79584d}.gallery-card footer span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gallery-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+    .gallery-card{cursor:zoom-in;transition:transform .15s}.gallery-card:hover{transform:rotate(0) scale(1.03);z-index:2}
+    .gallery-frame{aspect-ratio:4/3;container-type:size;display:grid;place-items:center;background:#ecdfc2;overflow:hidden}
+    .gallery-card .gallery-frame .photo-scene{width:min(100cqw,100cqh*var(--r));height:auto;max-width:none}
+    .zoom-box{position:absolute;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:#000b;cursor:zoom-out}.zoom-box.open{display:flex}
+    .zoom-photo{background:#fff;padding:10px 10px 40px;position:relative;box-shadow:0 20px 60px #000a;transform:rotate(-.8deg)}
+    .zoom-photo .photo-scene{height:auto;width:min(90vw,76vh*var(--r))}
+    .zoom-foot{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font-weight:900;color:#79584d;font-size:clamp(12px,1.8vh,16px)}
     .gallery-empty{grid-column:1/-1;text-align:center;padding:12%;font-family:'Gaegu';font-size:clamp(25px,4vh,48px);color:#927267}.gallery-count{display:inline-block;background:#ffe18a;border-radius:999px;padding:3px 10px;margin-left:8px;font-family:'Noto Sans KR';font-size:.35em;vertical-align:middle}
     .gallery-card .album-sticker{position:absolute;right:6px;top:6px;z-index:90;background:#fff47d;border:2px solid #49302b;border-radius:999px;padding:2px 8px;font-size:clamp(9px,1.3vh,13px);font-weight:900;transform:rotate(6deg)}.album-sticker.legend{background:#ffe27a}.album-sticker.disaster{background:#ffb4a8}.album-sticker.normal{background:#e3ecf2}
     /* 구버전(V1) 앨범 기록 렌더링용 */
@@ -116,8 +143,9 @@
 <body>
 <main id="app"><section class="game-shell">
   <section id="title" class="screen title-screen active">
-    <div class="album"><div class="cover-card"><div class="camera-mark">📸</div><h1><span>찰칵!</span><span>우리 가족</span></h1><p class="subtitle">완벽하게 세우고,<br>망하기 직전에 찰칵!</p><div class="difficulty" aria-label="난이도 선택"><button data-difficulty="easy">편안하게<small>사고 늦게</small></button><button class="selected" data-difficulty="normal">보통<small>추천</small></button><button data-difficulty="chaos">대환장<small>사고 폭발</small></button></div><button id="startBtn" class="start-btn">가족사진 찍기</button><div class="title-sub"><button id="titleAlbum" class="open-gallery">가족 앨범</button></div></div></div>
-    <p class="how">거실 · 생일 파티 · 캠핑장, 레벨마다 다른 배경</p>
+    <div class="hero"><picture><source media="(max-aspect-ratio:1.25/1)" srcset="assets/main/home-portrait.jpg"><img src="assets/main/home-landscape.jpg" alt="찰칵! 우리 가족 — 벚꽃 공원에서 포즈를 취한 가족"></picture>
+      <div class="difficulty" aria-label="난이도 선택"><button data-difficulty="easy">편안하게<small>사고 늦게</small></button><button class="selected" data-difficulty="normal">보통<small>추천</small></button><button data-difficulty="chaos">대환장<small>사고 폭발</small></button></div>
+      <button id="startBtn" class="start-btn">가족사진 찍기</button><button id="titleAlbum" class="open-gallery">가족 앨범</button></div>
   </section>
   <section id="game" class="screen game-screen">
     <header class="hud"><div class="hud-left"><span id="levelBadge" class="level-badge">거실 1/3</span><button class="gallery-btn open-gallery">앨범</button><button id="muteBtn" class="gallery-btn" aria-label="소리 켜기/끄기">🔊</button></div><div id="timer" class="timer">📷</div><div class="best-label">최고 <b id="best">0</b></div></header>
@@ -143,6 +171,7 @@
       <div class="result-actions"><button id="nextBtn" class="next-btn main-btn">다음 사진</button><div class="row"><button id="retryBtn" class="next-btn sub-btn">한 번 더 찍기</button><button class="next-btn open-gallery sub-btn">가족 앨범</button></div></div>
     </div>
   </div></section>
+  <div id="zoomBox" class="zoom-box" aria-label="사진 확대 (아무 곳이나 누르면 닫힘)"></div>
   <section id="gallery" class="screen gallery-screen"><div class="gallery-head"><h2><span id="galleryTitle">우리 가족 오늘의 앨범</span> <span id="galleryCount" class="gallery-count">0장</span></h2><button id="closeGallery" class="close-gallery">돌아가기</button></div><p id="galleryCopy" class="gallery-copy">완벽한 사진보다 웃긴 사진이 오래 남습니다. 최근 12장을 기기에 보관합니다.</p><div id="galleryGrid" class="gallery-grid"></div></section>
   <section id="complete" class="screen complete-screen"><div class="complete-card"><div class="complete-emoji">🏠📸</div><h2>가족 앨범 완성!</h2><p>거실·생일 파티·캠핑장 3장 완성</p><div class="complete-actions"><button id="completeAlbum" class="next-btn main-btn">가족 앨범 보기</button><button id="completeAgain" class="next-btn sub-btn">처음부터 다시 찍기</button></div></div></section>
   <div id="flash" class="flash"></div>
@@ -267,7 +296,7 @@ function buildEvents(lv,diff,seed,noFill){const K=CHAOS_SECONDS/3,sd=seed!=null?
   const anchors=ev.slice();if(noFill)return ev.sort((a,b)=>b.at-a.at);const ids=['mom','dad','sis','bro'].map(v=>[R(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
   ids.forEach((id,i)=>{const pool=Object.keys(POSE_META).filter(k=>POSE_META[k].char===id&&POSE_META[k].role==='chaos'&&!anchors.some(e=>e.pose===k)).map(k=>[R(),k]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
     let t=CHAOS_SECONDS-.9-i*.55-R()*.5,n=0,last=null;
-    while(t>=1.0){const own=anchors.filter(e=>e.actor===id);
+    while(t>=1.0&&n<pool.length){const own=anchors.filter(e=>e.actor===id);
       for(let k=0;k<12&&ev.some(e=>Math.abs(e.at-t)<.45);k++)t-=.1;   /* 다른 행동과 겹치면 조금씩 밀어서 배치 */
       if(t>=.9&&R()>.1&&!own.some(e=>Math.abs(e.at-t)<1.5)&&!ev.some(e=>Math.abs(e.at-t)<.45)){let k=pool[n%pool.length];if(k===last){n++;k=pool[n%pool.length]}n++;last=k;const P=POSE_META[k];
         ev.push({id:'f_'+id+'_'+ev.length,at:+t.toFixed(2),actor:id,pose:k,filler:true,hold:+(HOLD+R()*.4).toFixed(2),bubble:P.sev>=2?FILL_BUBBLE[P.key]||null:null})}
@@ -594,9 +623,12 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   function renderGallery(){const list=loadPhotos(),grid=$('#galleryGrid');$('#galleryCount').textContent=list.length+'장';grid.innerHTML='';
     if(!list.length){grid.innerHTML='<div class="gallery-empty">아직 사진이 없어요.<br>멋지게 망쳐보세요!</div>';return}
     list.forEach((r,i)=>{const card=document.createElement('article');card.className='gallery-card';card.style.setProperty('--tilt',`${i%2?-1.3:1.1}deg`);
-      const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');card.appendChild(scene);
+      const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');const frame=document.createElement('div');frame.className='gallery-frame';frame.appendChild(scene);card.appendChild(frame);card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','사진 크게 보기');card.addEventListener('click',()=>zoomPhoto(r));card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();zoomPhoto(r)}});
       const v2=r.version===2,rar=v2&&RARITY[r.rarity];if(rar){const st=document.createElement('div');st.className='album-sticker '+r.rarity;st.textContent=rar.icon+' '+rar.label;card.appendChild(st)}else if(r.sticker){const st=document.createElement('div');st.className='album-sticker';st.textContent=r.sticker;card.appendChild(st)}
       const foot=document.createElement('footer');foot.innerHTML=`<span>${r.scene||'거실'} ${r.level||1}/${v2?3:9}</span><span>${Number(r.score||0).toLocaleString()}점</span>`;card.appendChild(foot);grid.appendChild(card)})}
+  function zoomPhoto(r){const box=$('#zoomBox');box.innerHTML='';const wrap=document.createElement('div');wrap.className='zoom-photo';const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');wrap.appendChild(scene);
+    const rar=r.version===2&&RARITY[r.rarity];const foot=document.createElement('div');foot.className='zoom-foot';foot.textContent=`${rar?rar.icon+' '+rar.label+' · ':''}${r.scene||'거실'} ${r.level||1}/3 · ${Number(r.score||0).toLocaleString()}점`;wrap.appendChild(foot);box.appendChild(wrap);box.classList.add('open');wrap.style.setProperty('--r',String(r.stageRatio||.5))}
+  function closeZoom(){$('#zoomBox').classList.remove('open')}
   function abortRound(){phase='idle';S.timers=[];S.pending=[];drag=null;pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('')}
   function openGallery(){galleryReturn=screens.result.classList.contains('active')?'result':screens.game.classList.contains('active')?'game':screens.complete.classList.contains('active')?'complete':'title';if(galleryReturn==='game')abortRound();renderGallery();show('gallery')}
   function closeGallery(){if(galleryReturn==='result')show('result');else if(galleryReturn==='game')enterLevel();else show(galleryReturn)}
@@ -607,7 +639,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   $('#startBtn').addEventListener('click',async()=>{sfx('go');await preloadDone;enterLevel()});$('#missionStart').addEventListener('click',beginStaging);$('#nextBtn').addEventListener('click',advance);$('#retryBtn').addEventListener('click',retry);
   $('#shutter').addEventListener('click',takePhoto);
   stage.addEventListener('pointerdown',beginDrag);window.addEventListener('pointermove',moveDrag,{passive:false});window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
-  $$('.open-gallery').forEach(b=>b.addEventListener('click',openGallery));$('#closeGallery').addEventListener('click',closeGallery);
+  $$('.open-gallery').forEach(b=>b.addEventListener('click',openGallery));$('#closeGallery').addEventListener('click',closeGallery);$('#zoomBox').addEventListener('click',closeZoom);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeZoom()});
   $('#completeAlbum').addEventListener('click',openGallery);$('#completeAgain').addEventListener('click',()=>{currentLevel=1;store.set(KEY.level,'1');enterLevel()});
   memberEls().forEach(m=>{m._base=0;resetPose(m)});
   renderGallery();

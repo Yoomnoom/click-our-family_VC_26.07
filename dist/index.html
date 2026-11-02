@@ -115,7 +115,7 @@
     .gallery-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
     .gallery-tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 2%}.gallery-tools[hidden]{display:none}.gt-btn{border:2px solid #3c302d;background:#fff;color:#3c302d;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer;font-family:inherit}.gt-btn:disabled{opacity:.4;cursor:default}.gt-reset{margin-left:auto;border-color:#d75048;color:#d75048}
     .gallery-sel{position:absolute;left:6px;top:6px;z-index:95;width:30px;height:30px;margin:0;accent-color:#d75048;cursor:pointer}
-    .gallery-card{cursor:zoom-in;transition:transform .15s}.gallery-card:hover{transform:rotate(0) scale(1.03);z-index:2}
+    .gallery-card{cursor:zoom-in;transition:transform .15s}.gallery-card:hover{transform:scale(1.03);z-index:2}
     .gallery-frame{aspect-ratio:4/3;container-type:size;display:grid;place-items:center;background:#ecdfc2;overflow:hidden}
     .gallery-card .gallery-frame .photo-scene{width:min(100cqw,100cqh*var(--r));height:auto;max-width:none}
     .zoom-box{position:absolute;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:#000b;cursor:zoom-out}.zoom-box.open{display:flex}
@@ -650,7 +650,8 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   $('#resetAlbum').addEventListener('click',()=>{const n=loadPhotos().length;if(!n||!confirm(`앨범의 사진 ${n}장을 모두 지우고 새로 시작할까요?\n지운 사진은 되돌릴 수 없어요.`))return;writePhotos([])});
   function renderGallery(){const list=loadPhotos(),grid=$('#galleryGrid');sel.clear();updateTools(list.length);$('#galleryCount').textContent=list.length+'장';grid.innerHTML='';
     if(!list.length){grid.innerHTML='<div class="gallery-empty">아직 사진이 없어요.<br>멋지게 망쳐보세요!</div>';return}
-    list.forEach((r,i)=>{const card=document.createElement('article');card.className='gallery-card';card.style.setProperty('--tilt',`${i%2?-1.3:1.1}deg`);
+    list.forEach((r,i)=>{const card=document.createElement('article');card.className='gallery-card';card.style.setProperty('--tilt','0deg');   // 기울이면 인물이 뭉개져 보여서 똑바로 둔다
+      
       const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');const frame=document.createElement('div');frame.className='gallery-frame';frame.appendChild(scene);card.appendChild(frame);card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','사진 크게 보기');card.addEventListener('click',()=>zoomPhoto(r));card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();zoomPhoto(r)}});
       const v2=r.version===2,rar=v2&&RARITY[r.rarity];if(rar){const st=document.createElement('div');st.className='album-sticker '+r.rarity;st.textContent=rar.icon+' '+rar.label;card.appendChild(st)}else if(r.sticker){const st=document.createElement('div');st.className='album-sticker';st.textContent=r.sticker;card.appendChild(st)}
       const foot=document.createElement('footer');foot.innerHTML=`<span>${r.scene||'거실'} ${r.level||1}/${v2?3:9}</span><span>${Number(r.score||0).toLocaleString()}점</span>`;card.appendChild(foot);

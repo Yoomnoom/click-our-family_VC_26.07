@@ -55,7 +55,7 @@
     .level-badge{display:inline-block;background:#493735;color:#fff;border-radius:999px;padding:4px 9px;margin-right:3px;font-size:.75em;white-space:nowrap}
     .timer{position:relative;width:clamp(62px,9vh,100px);aspect-ratio:1;border-radius:50%;background:#fff;border:6px solid var(--red);display:grid;place-items:center;font-size:clamp(23px,4vh,45px);font-weight:900;box-shadow:0 4px 0 #b4443e;transform:translateY(8%)}
     .timer.danger{animation:pulse .45s infinite alternate;background:#fff0a8}@keyframes pulse{to{transform:translateY(8%) scale(1.08)}}
-    .stage{position:relative;flex:1;overflow:hidden;touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none;background:url('assets/poses/living-room2.png') center/cover no-repeat}
+    .stage{isolation:isolate;position:relative;flex:1;overflow:hidden;touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none;background:url('assets/poses/living-room2.png') center/cover no-repeat}
     /* 인물 컨테이너: 509×556 캔버스 비율 고정. 모든 포즈가 같은 캔버스를 쓰므로 크기 보정 CSS 불필요 */
     .family-member{position:absolute;height:58%;aspect-ratio:509/556;bottom:2%;transform:translateX(-50%);transform-origin:50% 100%;pointer-events:none;z-index:10;transition:left var(--mv,.45s) cubic-bezier(.2,.8,.3,1),bottom var(--mv,.45s) cubic-bezier(.2,.8,.3,1)}
     .family-member.dragging{z-index:50;transition:none}.family-member.instant{transition:none}
@@ -73,7 +73,7 @@
     .big-count{position:absolute;left:50%;top:17%;transform:translateX(-50%);z-index:16;pointer-events:none;font-family:'Gaegu',cursive;font-weight:900;font-size:clamp(90px,17vh,170px);line-height:1;color:#fff;-webkit-text-stroke:6px #d84d44;paint-order:stroke fill;text-shadow:0 8px 0 #7b2d27aa;opacity:0}
     .big-count.show{opacity:.82;animation:count-pop .5s ease-out}@keyframes count-pop{0%{transform:translateX(-50%) scale(1.6);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:.82}}
     .coach{position:absolute;left:42%;bottom:3%;transform:translateX(-50%);z-index:14;pointer-events:none;background:#392e2de0;color:#fff;border-radius:999px;padding:8px 16px;font-weight:900;font-size:clamp(11px,1.8vh,18px);white-space:nowrap;display:none;word-break:keep-all}.coach.show{display:block;animation:coach-bob 1.1s ease-in-out infinite alternate}@keyframes coach-bob{to{transform:translateX(-50%) translateY(-6px)}}
-    .photo-pet{position:absolute;display:none;width:26%;height:16%;object-fit:contain;object-position:center bottom;left:-18%;bottom:14%;transform:translateX(-50%);z-index:55;pointer-events:none;filter:drop-shadow(0 4px 2px #432b2344)}
+    .photo-pet{position:absolute;display:none;width:39%;height:24%;object-fit:contain;object-position:center bottom;left:-18%;bottom:14%;transform:translateX(-50%);z-index:55;pointer-events:none;filter:drop-shadow(0 4px 2px #432b2344)}
     .shutter{--heat:0;position:absolute;right:3%;bottom:4%;z-index:30;width:clamp(66px,11vh,116px);aspect-ratio:1;border-radius:50%;border:8px solid color-mix(in srgb,#fff calc((1 - var(--heat))*100%),#e5122d);background:var(--red);box-shadow:0 0 0 5px #633f38,0 8px 0 #3c2f2b,0 0 calc(var(--heat)*26px) calc(var(--heat)*8px) #e5122d99;cursor:pointer;display:grid;place-items:center;color:white;font-size:clamp(26px,4.5vh,54px);touch-action:manipulation}.shutter:active{transform:translateY(6px);box-shadow:0 0 0 5px #633f38,0 2px 0 #3c2f2b}
     .flash{position:absolute;inset:0;background:white;z-index:100;pointer-events:none;opacity:0}.flash.fire{animation:flash .42s}@keyframes flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
     .toast{position:absolute;left:50%;top:15%;transform:translate(-50%,-20px);background:#392e2dd9;color:white;border-radius:999px;padding:9px 18px;font-weight:900;font-size:clamp(11px,1.8vh,19px);z-index:40;opacity:0;transition:.2s;white-space:nowrap;pointer-events:none;word-break:keep-all}.toast.show{opacity:1;transform:translate(-50%,0)}.toast.hot{background:#d84d44}
@@ -86,7 +86,7 @@
     .result-wrap{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:1.4vh}
     .photo{--r:.5;--ph:52vh;position:relative;background:#f9f1d9;padding:10px 10px 38px;transform:rotate(-1.2deg);box-shadow:0 20px 45px #0008;flex:none}
     .photo.shake{animation:photo-shake .5s}@keyframes photo-shake{0%,100%{transform:rotate(-1.2deg)}15%{transform:rotate(1.4deg) translate(4px,-3px)}35%{transform:rotate(-2.4deg) translate(-5px,3px)}55%{transform:rotate(.8deg) translate(3px,2px)}75%{transform:rotate(-1.8deg)}}
-    .photo-scene{position:relative;overflow:hidden;background:url('assets/poses/living-room2.png') center/cover no-repeat;height:var(--ph);aspect-ratio:var(--r);width:auto;max-width:100%}
+    .photo-scene{isolation:isolate;position:relative;overflow:hidden;background:url('assets/poses/living-room2.png') center/cover no-repeat;height:var(--ph);aspect-ratio:var(--r);width:auto;max-width:100%}
     .photo-scene.develop{animation:develop .9s ease-out both}
     @keyframes develop{0%{clip-path:inset(0 0 100% 0);filter:blur(12px) sepia(1) brightness(1.6)}55%{clip-path:inset(0 0 0 0);filter:blur(5px) sepia(.7) brightness(1.25)}100%{clip-path:inset(0);filter:none}}
     .mini-image{position:absolute;bottom:1%;left:50%;width:19%;height:72%;object-fit:contain;object-position:center bottom;transform:translateX(-50%);transform-origin:50% 100%;filter:drop-shadow(0 4px 2px #432b2344)}
@@ -542,7 +542,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
     renderConds(evaluateConditions(cfg,measure(),stageAspect()),true);
     if(skipBrief)beginStaging();else $('#missionIntro').classList.add('show')}
   /* 배경은 cover: 세로 화면은 높이에 맞춰 좌우가 잘리고, 가로 화면은 너비에 맞춰 위아래가 잘린다 → 바닥선(레벨 배경마다 cfg.floor, 이미지 높이 대비 비율)의 화면 위치가 달라진다 */
-  function updateFloor(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;const imgH=Math.max(r.height,r.width*940/1672),off=(imgH-r.height)/2;FLOOR_FEET=Math.max(6,Math.min(30,100-((cfg&&cfg.floor||.80)*imgH-off)/r.height*100))}
+  function updateFloor(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;const imgH=Math.max(r.height,r.width*940/1672),off=(imgH-r.height)/2;FLOOR_FEET=100   /* 바닥선 제한을 없앴다: 의자·난간·벤치 위에도 올릴 수 있고, 머리가 화면 밖으로 나가지 않는 높이까지만 막는다(maxYFor). 배경의 floor 값은 더 이상 쓰지 않는다 */}
   window.addEventListener('resize',updateFloor);
   function layoutStart(){updateFloor();
     memberEls().forEach(m=>{m.classList.remove('dragging','locked-member');m.removeAttribute('data-gag');m._bounce=false;delete m.dataset.locked;resetPose(m);m.style.removeProperty('--mv')});

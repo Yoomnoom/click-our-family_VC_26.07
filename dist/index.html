@@ -451,10 +451,14 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   const legacyAction={mom:'assets/mom-action.png',dad:'assets/dad-action.png',sis:'assets/sis-action.png',bro:'assets/bro-action.png'};
   const legacyX={mom:18,dad:39,sis:59,bro:78};
   const difficulties={easy:{label:'편안하게',button:'편안하게 찍기'},normal:{label:'보통',button:'가족사진 찍기'},chaos:{label:'대환장',button:'대환장 찍기'}};
-  const KEY={level:'familyPhotoV2Level',best:'familyPhotoV2Best',diff:'familyPhotoDifficulty',gallery:'familyPhotoGallery',mute:'familyPhotoMuted'};
+  const KEY={level:'familyPhotoV2Level',best:'familyPhotoV2Best',diff:'familyPhotoDifficulty',gallery:'familyPhotoGallery',order:'familyPhotoV2Order',mute:'familyPhotoMuted'};
   const TAP_PX=6,TAP_MS=250,DRAG_IN_CHAOS=true;
   const store={get:(k,d)=>{try{return localStorage.getItem(k)??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
   let currentLevel=Math.max(1,Math.min(LEVELS.length,Number(store.get(KEY.level,1))||1)),difficulty=store.get(KEY.diff,'normal'),best=Number(store.get(KEY.best,0))||0;
+  /* 배경 순서: 한 판(6장)마다 6개를 한 번씩 무작위로 섞는다. 새로고침해도 같은 순서를 이어가려고 저장해 둔다 */
+  const loadOrder=()=>{try{const o=JSON.parse(store.get(KEY.order,'null'));return Array.isArray(o)&&o.length===LEVELS.length&&[...o].sort((a,b)=>a-b).every((v,i)=>v===i)?o:null}catch{return null}};
+  const newOrder=()=>{const o=LEVELS.map((_,i)=>i);for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}store.set(KEY.order,JSON.stringify(o));return o};
+  let order=loadOrder()||newOrder();
   let phase='title',cfg=LEVELS[0],S={fired:[],pending:[],timers:[],prev:[]},drag=null,galleryReturn='title',roundNo=0,resultTimers=[],muted=store.get(KEY.mute,'0')==='1';
   const stage=$('#stage'),pet=$('#photoPet');
   $('#best').textContent=best.toLocaleString();
@@ -508,13 +512,13 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   function measureLogical(){const sr=stage.getBoundingClientRect(),A=sr.width/sr.height;return memberEls().map(m=>buildMember({poseId:m.dataset.poseId,x:parseFloat(m.style.left),y:m._base,wc0:m.offsetWidth/sr.width*100,hc0:m.offsetHeight/sr.height*100},A))}
 
   /* ---------- 조건 카드 ---------- */
-  function renderConds(status,silent){const bar=$('#condBar');if(!bar.children.length||bar.dataset.level!==String(currentLevel)){bar.innerHTML=cfg.conds.map(c=>`<div class="cond"><i>✓</i><span>${c.label}</span></div>`).join('');bar.dataset.level=String(currentLevel);S.prev=[]}
+  function renderConds(status,silent){const bar=$('#condBar');if(!bar.children.length||bar.dataset.level!==cfg.id){bar.innerHTML=cfg.conds.map(c=>`<div class="cond"><i>✓</i><span>${c.label}</span></div>`).join('');bar.dataset.level=cfg.id;S.prev=[]}
     [...bar.children].forEach((d,i)=>{const ok=!!status[i];if(ok&&!S.prev[i]&&!silent){d.classList.remove('pop');void d.offsetWidth;d.classList.add('pop');sfx('ok')}d.classList.toggle('ok',ok);S.prev[i]=ok})}
 
   /* ---------- 라운드 흐름: briefing → staging → ready → chaos → capture → result ---------- */
   function levelKicker(){return cfg.scene+' · 사진 '+currentLevel+'/'+LEVELS.length+' · '+difficulties[difficulty].label}
   function enterLevel(skipBrief){
-    cfg=LEVELS[currentLevel-1];phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
+    cfg=LEVELS[order[currentLevel-1]];phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
     $('#levelBadge').textContent=cfg.scene+' '+currentLevel+'/'+LEVELS.length;$('#stage').style.backgroundImage=`url('${cfg.bg}')`;
     pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
     $('#condBar').innerHTML='';layoutStart();
@@ -703,11 +707,11 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   function retry(){resultTimers.forEach(clearTimeout);enterLevel(true)}
   function setDifficulty(v){if(!difficulties[v])v='normal';difficulty=v;store.set(KEY.diff,v);$$('.difficulty button').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===v));$('#startBtn').textContent=difficulties[v].button}
   $$('.difficulty button').forEach(b=>b.addEventListener('click',()=>setDifficulty(b.dataset.difficulty)));setDifficulty(difficulty);
-  $('#startBtn').addEventListener('click',async()=>{sfx('go');await preloadDone;enterLevel()});$('#missionStart').addEventListener('click',beginStaging);$('#nextBtn').addEventListener('click',advance);$('#retryBtn').addEventListener('click',retry);
+  $('#startBtn').addEventListener('click',async()=>{sfx('go');if(currentLevel===1)order=newOrder();await preloadDone;enterLevel()});$('#missionStart').addEventListener('click',beginStaging);$('#nextBtn').addEventListener('click',advance);$('#retryBtn').addEventListener('click',retry);
   $('#shutter').addEventListener('click',takePhoto);
   stage.addEventListener('pointerdown',beginDrag);window.addEventListener('pointermove',moveDrag,{passive:false});window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
   $$('.open-gallery').forEach(b=>b.addEventListener('click',openGallery));$('#closeGallery').addEventListener('click',closeGallery);$('#zoomBox').addEventListener('click',closeZoom);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeZoom()});
-  $('#completeAlbum').addEventListener('click',openGallery);$('#completeAgain').addEventListener('click',()=>{currentLevel=1;store.set(KEY.level,'1');enterLevel()});
+  $('#completeAlbum').addEventListener('click',openGallery);$('#completeAgain').addEventListener('click',()=>{currentLevel=1;store.set(KEY.level,'1');order=newOrder();enterLevel()});
   memberEls().forEach(m=>{m._base=0;resetPose(m)});
   renderGallery();
   /* 자동 검증(tools/e2e_check.js)용 읽기 전용 훅 */

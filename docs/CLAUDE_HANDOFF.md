@@ -1,6 +1,7 @@
 # 2026-11-03 갱신: 6레벨 + 완성 화면 이미지 + 앨범 선택 기능
 
 - 레벨 6개(`dist/index.html`의 `LEVELS`): 거실 → 생일 파티 → 캠핑장 → **벚꽃 공원 → 해변 테라스 → 할머니 댁**. 새 3개 조건: L4 얼굴 4개+누나·동생 붙기, L5 엄마는 동생 뒤+특수 자세, L6 삼각 구도+엄마·아빠 붙기(고양이). 레벨 수는 `LEVELS.length`를 쓴다(예전엔 3이 코드에 박혀 있었음).
+- 배경 순서는 한 판마다 무작위(`order`, localStorage `familyPhotoV2Order`). 사진 번호(n/6)는 진행 순서이고, 레벨은 `LEVELS[order[n-1]]`. 새 판(1번째 사진 시작·다시 찍기)에서만 새로 섞음. 쉬운 레벨이 앞에 온다는 보장은 없음.
 - 완성 화면: `assets/main/complete-landscape.jpg`·`complete-portrait.jpg` 위에 투명 버튼 2개를 겹침(타이틀과 같은 방식, 좌표는 이미지 대비 %). **그림에 "추억 3장을 모았어요!"와 사진 3장이 들어 있어 6장에 맞게 다시 만들어야 함.**
 - 앨범: 선택 다운로드(PNG)·선택 삭제·모두 지우기 추가.
 - 확인: `node tools/logic_tests.js` 467 통과, `node tools/balance_sim.js` 전부 PASS, 브라우저로 레벨 5·6 진행과 완성 화면 버튼 동작 확인. **못 한 것: `tools/e2e_check.js`(Playwright 없음, "3장" 가정이 남아 있어 갱신 필요), 세로(모바일) 화면 눈 확인.**

@@ -382,9 +382,9 @@ function planMoves(lv,ms,A,ev,locked){
   return plan}
 
 /* ----- 고양이 연쇄 반응: 고양이와 가장 가까운 최대 2명(거리 → 인물 ID 순)이 자기 반응 포즈로 전환 ----- */
-function catReactions(ms,A){
-  const order=ms.filter(m=>REACT[m.id]).map(m=>({m,d:distW(ctr(m),CAT_POS,A||A_DEFAULT)})).sort((a,b)=>a.d-b.d||(a.m.id<b.m.id?-1:1)).slice(0,2);
-  return order.map(({m})=>({id:m.id,poseId:REACT[m.id],dx:m.id==='bro'?(m.x<CAT_POS.x?9:-9):0}))}
+function catReactions(ms,A,pos){const P=pos||CAT_POS;
+  const order=ms.filter(m=>REACT[m.id]).map(m=>({m,d:distW(ctr(m),P,A||A_DEFAULT)})).sort((a,b)=>a.d-b.d||(a.m.id<b.m.id?-1:1)).slice(0,2);
+  return order.map(({m})=>({id:m.id,poseId:REACT[m.id],dx:m.id==='bro'?(m.x<P.x?9:-9):0}))}
 /* 반응 적용(순수): 포즈 교체 + (동생) 고양이 쪽 이동 */
 function applyReactions(ms,A){return catReactions(ms,A).reduce((arr,r)=>arr.map(m=>{if(m.id!==r.id)return m;const p=withPose(m,r.poseId);return r.dx?moveM(p,p.x+r.dx,p.y):p}),ms)}
 
@@ -460,14 +460,28 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   const newOrder=()=>{const o=LEVELS.map((_,i)=>i);for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}store.set(KEY.order,JSON.stringify(o));return o};
   let order=loadOrder()||newOrder();
   let phase='title',cfg=LEVELS[0],S={fired:[],pending:[],timers:[],prev:[]},drag=null,galleryReturn='title',roundNo=0,resultTimers=[],muted=store.get(KEY.mute,'0')==='1';
-  const stage=$('#stage'),pet=$('#photoPet');
+  const stage=$('#stage'),pet=$('#photoPet');pet.style.display='none';
+  /* ---------- 동물: 처음부터 사진 안에 앉아 있다가, 사고 때 가족 쪽으로 달려온다 ----------
+     몇 번째 사진인지로 정한다(배경 순서가 섞여도 동일): 1번 없음, 2~3번 고양이, 4~5번 강아지, 6번 둘 다 */
+  const ANIMALS={cat:{src:'assets/photo-cat.png',alt:'사진 속 고양이',say:'으악 고양이!',bubble:'고양이가 온다!'},dog:{src:'assets/photo-dog.png',alt:'사진 속 강아지',say:'으악 강아지!',bubble:'강아지가 달려와요!'}};
+  const animalsFor=n=>n>=6?['cat','dog']:n>=4?['dog']:n>=2?['cat']:[];
+  /* 쉬는 자리(가로 %)와 달려가 멈추는 자리. 둘이 함께 있을 때는 서로 겹치지 않게 벌린다 */
+  const petSpot=(kind,n)=>n>1?(kind==='cat'?{rest:88,to:62}:{rest:12,to:38}):(kind==='cat'?{rest:88,to:CAT_POS.x}:{rest:12,to:CAT_POS.x});
+  let pets=[];
+  function setupPets(){pets.forEach(p=>p.el.remove());pets=[];const kinds=animalsFor(currentLevel);
+    kinds.forEach(k=>{const sp=petSpot(k,kinds.length),img=document.createElement('img');img.className='photo-pet';img.src=ANIMALS[k].src;img.alt=ANIMALS[k].alt;
+      img.style.display='block';img.style.left=sp.rest+'%';img.style.bottom=(CAT_POS.y-8)+'%';pet.parentNode.appendChild(img);pets.push({kind:k,el:img,from:sp.rest,to:sp.to,firedAt:null})})}
+  /* 이 사진에 나올 동물의 사고(고양이 사고 데이터를 그대로 쓴다). 다른 사고와 0.5초 안에 겹치지 않는 시각을 고른다 */
+  function animalEvents(base,kinds){const taken=base.chaos.filter(e=>e.kind!=='cat').map(e=>e.at).concat(base.extra?[base.extra.at]:[]),out=[];
+    kinds.forEach(k=>{const at=[.8,1.35,1.65,1.9,2.5,.5].find(c=>taken.concat(out.map(o=>o.at)).every(t=>Math.abs(t-c)>=.2))||.8;
+      out.push({id:k,at,kind:'cat',animal:k,catchAfter:.15,bump:'always',bubble:ANIMALS[k].bubble})});return out}
   $('#best').textContent=best.toLocaleString();
   const now=()=>performance.now()/1000;
   const el=id=>$(`.family-member[data-id="${id}"]`);
   const memberEls=()=>$$('.family-member');
   /* 포즈 24장 + 고양이·배경 프리로드(decode 까지) — 사고 중 포즈 교체에서 빈 프레임이 보이면 안 된다 */
   const keepAlive=[];
-  const preloadDone=Promise.all([...Object.values(POSE_META).map(p=>p.file),'assets/photo-cat.png','assets/poses/living-room2.png','assets/poses/birthday-room.png','assets/poses/campsite.png','assets/poses/cherry-blossom-park.png','assets/poses/beach.png','assets/poses/grandparents-house.png','assets/main/complete-landscape.jpg','assets/main/complete-portrait.jpg','assets/living-room.png'].map(src=>new Promise(res=>{const i=new Image();keepAlive.push(i);i.onerror=()=>res(false);i.src=src;(i.decode?i.decode():Promise.resolve()).then(()=>res(true),()=>res(false))})));
+  const preloadDone=Promise.all([...Object.values(POSE_META).map(p=>p.file),'assets/photo-cat.png','assets/photo-dog.png','assets/poses/living-room2.png','assets/poses/birthday-room.png','assets/poses/campsite.png','assets/poses/cherry-blossom-park.png','assets/poses/beach.png','assets/poses/grandparents-house.png','assets/main/complete-landscape.jpg','assets/main/complete-portrait.jpg','assets/living-room.png'].map(src=>new Promise(res=>{const i=new Image();keepAlive.push(i);i.onerror=()=>res(false);i.src=src;(i.decode?i.decode():Promise.resolve()).then(()=>res(true),()=>res(false))})));
 
   /* ---------- 소리·진동 (외부 파일 없이 합성) ---------- */
   let actx=null;
@@ -518,9 +532,9 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   /* ---------- 라운드 흐름: briefing → staging → ready → chaos → capture → result ---------- */
   function levelKicker(){return cfg.scene+' · 사진 '+currentLevel+'/'+LEVELS.length+' · '+difficulties[difficulty].label}
   function enterLevel(skipBrief){
-    cfg=LEVELS[order[currentLevel-1]];phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
+    {const base=LEVELS[order[currentLevel-1]],kinds=animalsFor(currentLevel);cfg=Object.assign({},base,{chaos:base.chaos.filter(e=>e.kind!=='cat').concat(animalEvents(base,kinds)),rarity:Object.assign({},base.rarity,{legend:kinds.length?460:99999})})}phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
     $('#levelBadge').textContent=cfg.scene+' '+currentLevel+'/'+LEVELS.length;$('#stage').style.backgroundImage=`url('${cfg.bg}')`;
-    pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
+    setupPets();$('#bigCount').classList.remove('show');setCoach('');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
     $('#condBar').innerHTML='';layoutStart();
     $('#missionKicker').textContent=levelKicker();$('#missionTitle').textContent=cfg.title;$('#missionConds').innerHTML=cfg.conds.map((c,i)=>`<li><b>${i+1}</b>${c.label}</li>`).join('');
     renderConds(evaluateConditions(cfg,measure(),stageAspect()),true);
@@ -557,7 +571,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
     const dt=S.timers.filter(x=>rem<=x.when);S.timers=S.timers.filter(x=>rem>x.when);dt.forEach(x=>x.fn(rem));
     const shown=Math.max(1,Math.ceil(rem));if(shown!==S.shown){S.shown=shown;if(shown<=3){const b=$('#bigCount');b.textContent=shown;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}$('#timer').textContent=shown;sfx('tick')}
     $('#shutter').style.setProperty('--heat',Math.max(0,Math.min(1,1-rem/CHAOS_SECONDS)).toFixed(2));
-    if(S.cat)pet.style.left=(-14+(CAT_POS.x+14)*Math.max(0,Math.min(1,(S.cat.at-rem)/.5)))+'%';
+    pets.forEach(q=>{if(q.firedAt!=null)q.el.style.left=(q.from+(q.to-q.from)*Math.max(0,Math.min(1,(q.firedAt-rem)/.5)))+'%'});
     if(rem<=0){toast('시간 끝! 자동으로 찰칵',true);takePhoto()}}
   setInterval(loop,40);
 
@@ -573,12 +587,12 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
     if(note){const b=plan.find(c=>c.kind==='bump'||c.kind==='reset');if(b)toast(b.reset?NAMES[b.id]+' 자세가 풀렸다!':NAMES[b.id]+' 밀려났다!',true)}}
   function logicalPlan(ev){return planMoves(cfg,measureLogical(),stageAspect(),ev,memberEls().filter(m=>m.dataset.locked).map(m=>m.dataset.id))}
   function fireEvent(ev,rem){
-    if(ev.kind==='cat'){S.fired.push({ev,firedAt:rem});S.cat={at:rem};pet.src='assets/photo-cat.png';pet.style.display='block';pet.style.left='-14%';pet.style.bottom=(CAT_POS.y-8)+'%';toast(ev.bubble,true);sfx('boing');buzz(20);
+    if(ev.kind==='cat'){S.fired.push({ev,firedAt:rem});S.cat={at:rem};const q=pets.find(x=>x.kind===(ev.animal||'cat'));if(q)q.firedAt=rem;toast(ev.bubble,true);sfx('boing');buzz(20);
       /* 연쇄 반응: 고양이와 가장 가까운 최대 2명이 반응 포즈로 즉시 전환 (동생은 고양이 쪽으로 8~10% 이동) */
-      const reacts=catReactions(measureLogical(),stageAspect());
+      const reacts=catReactions(measureLogical(),stageAspect(),q?{x:q.to,y:CAT_POS.y}:null);
       reacts.forEach(r=>{const m=el(r.id);if(!m)return;if(drag&&drag.m===m)releaseDrag();m.dataset.accident='cat_'+r.id;const prev=m.dataset.poseId;setPose(m,r.poseId,true);lockMember(m,rem,.8);restoreLater(m,prev,rem,CAT_HOLD);
         if(r.dx){const lim=limitsFor(r.poseId,m.offsetWidth/stage.getBoundingClientRect().width*100,m.offsetHeight/stage.getBoundingClientRect().height*100,m._base);place(m,Math.max(lim.minX,Math.min(lim.maxX,parseFloat(m.style.left)+r.dx)),m._base)}});
-      if(reacts[0])bubble(el(reacts[0].id),'으악 고양이!',1400);
+      if(reacts[0])bubble(el(reacts[0].id),ANIMALS[ev.animal||'cat'].say,1400);
       schedule(rem-.1,()=>applyPlan(logicalPlan(ev),true));return}
     const m=el(ev.actor);if(!m)return;
     if(drag&&drag.m===m&&drag.moved){if(!ev.postponed){ev.postponed=true;ev.at=rem-.4;S.pending.push(ev);return}releaseDrag()}
@@ -616,7 +630,7 @@ if(typeof module!=='undefined')module.exports={NAMES,CANVAS,POSE_META,BASE,WAVE,
   /* ---------- 촬영 ---------- */
   function snapshotMembers(){const sr=stage.getBoundingClientRect();return memberEls().map(m=>{const id=m.dataset.id,c=containerBox(m,sr),P=POSE_META[m.dataset.poseId];
     return{id,poseId:m.dataset.poseId,poseRole:P.role,pose:P.file,x:parseFloat(m.style.left),y:m._base,box:{cx:c.cx,bottom:c.bottom,w:c.wc,h:c.hc,z:c.z},s:c.s}})}
-  function captureProps(){const sr=stage.getBoundingClientRect();if(getComputedStyle(pet).display==='none')return[];const r=pet.getBoundingClientRect();if(r.right<sr.left||r.left>sr.right)return[];return[{src:pet.getAttribute('src'),box:{cx:(r.left+r.width/2-sr.left)/sr.width*100,bottom:(sr.bottom-r.bottom)/sr.height*100,w:r.width/sr.width*100,h:r.height/sr.height*100,z:55}}]}
+  function captureProps(){const sr=stage.getBoundingClientRect();return pets.map(q=>{const r=q.el.getBoundingClientRect();if(r.right<sr.left||r.left>sr.right)return null;return{src:q.el.getAttribute('src'),box:{cx:(r.left+r.width/2-sr.left)/sr.width*100,bottom:(sr.bottom-r.bottom)/sr.height*100,w:r.width/sr.width*100,h:r.height/sr.height*100,z:55}}}).filter(Boolean)}
   function takePhoto(){if(phase!=='staging'&&phase!=='ready'&&phase!=='chaos')return;
     const wasChaos=phase==='chaos',T=wasChaos?Math.max(0,S.rem):CHAOS_SECONDS,A=stageAspect();
     /* 스냅샷을 먼저 확정한 뒤 모든 사고 타이머를 정지한다 */

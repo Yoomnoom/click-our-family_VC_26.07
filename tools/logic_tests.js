@@ -9,7 +9,7 @@ const canon = i => lv(i).canon.map(([id, x, y, p]) => M(id, x, y, p));
 const PM = L.POSE_META;
 
 // --- POSE_META 무결성 ---
-t('POSE_META 24개', Object.keys(PM).length === 24);
+t('POSE_META 28개(기본 6 × 4 + 멧돼지 충돌 p7 × 4)', Object.keys(PM).length === 28 && ['mom', 'dad', 'sis', 'bro'].every(c => PM[c + '-p7'].role === 'hit'));
 ['mom', 'dad', 'sis', 'bro'].forEach(c => {
   const ps = Object.keys(PM).filter(k => PM[k].char === c), cnt = r => ps.filter(k => PM[k].role === r).length;
   t(`${c}: base 1 / wave 1 / special 1 / chaos 3`, cnt('base') === 1 && cnt('wave') === 1 && cnt('special') === 1 && cnt('chaos') === 3, ps.map(k => PM[k].role));
@@ -217,6 +217,38 @@ t('복귀: 사고 포즈는 hold 초 안에만 보이고 그 뒤 시작 포즈�
   const during = L.simulateShot(l, c, A, ev.at - .2, 'normal', true, 5), after = L.simulateShot(l, c, A, ev.at - ev.hold - .3, 'normal', true, 5);
   return during.moment > 0 && after.moment < during.moment;
 })());
+
+// --- 멧돼지 돌발 사고 ---
+{
+  const out = L.LEVELS.filter(l => l.outdoor).map(l => l.id).sort().join();
+  t('멧돼지는 야외 3개 배경(캠핑장·벚꽃 공원·해변)에만', out === 'beach5,living3,park4', out);
+  t('등장 확률 기본 30%', L.BOAR_CHANCE === .3);
+  const p = { impact: 4, dir: 1, x0: -35, xc: 50, xOut: 135 }, F = r => L.boarFrame(p, r);
+  t('등장 이전에는 화면에 없음', F(4 + L.BOAR_RUN + .01) === null);
+  t('달리기 → 놀람 → 어지러움 → 퇴장 순서', F(4 + L.BOAR_RUN - .01).phase === 'run' && F(4 + L.BOAR_NOTICE - .05).phase === 'notice' && F(3.9).phase === 'hit' && F(4 - L.BOAR_HOLD - .1).phase === 'exit');
+  t('충돌 포즈(4)는 BOAR_HOLD 동안 같은 자리에 유지', [3.99, 3, 4 - L.BOAR_HOLD + .01].every(r => F(r).pose === 4 && F(r).x === 50));
+  t('달리기 포즈는 1·2 번갈아', new Set([0, 1, 2, 3].map(i => F(4 + L.BOAR_RUN - .01 - i * .14).pose)).size === 2);
+  t('놀라는 구간은 포즈 3, 충돌 직전 위치가 충돌 자리에 닿음', F(4 + .01).pose === 3 && Math.abs(F(4 + .001).x - 50) < .5);
+  t('퇴장이 끝나면 다시 사라짐', F(4 - L.BOAR_HOLD - L.BOAR_EXIT - .01) === null);
+  const q = { dir: -1, x0: 135, xc: 30, xOut: -35, impact: 3 };
+  t('왼쪽으로 달릴 때도 같은 흐름(오른쪽 가장자리 → 충돌 자리)', L.boarFrame(q, 3 + L.BOAR_RUN - .001).x > 120 && L.boarFrame(q, 3 - .1).x === 30);
+  const m = canon(3);
+  const hit = m.map(v => v.id === 'dad' ? L.withPose(v, 'dad-p7') : v), s0 = L.scoreSnapshot(lv(3), m, A, {}), s1 = L.scoreSnapshot(lv(3), hit, A, {}), s2 = L.scoreSnapshot(lv(3), hit, A, { boarVisible: true });
+  t('충돌 포즈는 사고 포즈로 점수가 오르고 events 에 boar', s1.moment > s0.moment && s1.events.includes('boar'), [s0.moment, s1.moment]);
+  t('멧돼지가 사진에 보이면 BOAR_BONUS 가 더해지고 events 에 boar 는 한 번만', s2.chaos - s1.chaos > 0 && s2.events.filter(e => e === 'boar').length === 1 && s2.accident > s1.accident);
+  t('멧돼지 사진 제목은 멧돼지 문구', L.makeTitle(s2, 1).key === 'boar');
+  t('멧돼지 없는 기존 사진은 그대로(boar 플래그 꺼짐)', s0.flags.boar === false && !s0.events.includes('boar'));
+}
+
+// --- 삼각 구도는 화면 비율과 무관 (가로 PC 화면에서도 설계한 정답 배치가 충족돼야 한다) ---
+[3, 6].forEach(i => [.46, .75, 1, 1.3, 1.78, 2].forEach(a => t(`triangle: ${lv(i).id} 정답 배치는 화면 비율 ${a} 에서도 충족`, L.evaluateConditions(lv(i), canon(i), a)[lv(i).conds.findIndex(c => c.type === 'triangle')] === true)));
+
+// --- 강아지 사진에 고양이 제목이 붙지 않는다 ---
+{
+  const c = canon(3), d = L.scoreSnapshot(lv(3), c, A, { catVisible: true, animal: 'dog' }), k = L.scoreSnapshot(lv(3), c, A, { catVisible: true, animal: 'cat' });
+  t('강아지 사진 제목에 "고양이"가 없다', ![0, 1, 2].some(n => L.makeTitle(d, n).title.includes('고양이')), [0, 1, 2].map(n => L.makeTitle(d, n).title));
+  t('고양이 사진 제목에는 "고양이", 강아지는 "강아지"', L.makeTitle(k, 0).title.includes('고양이') && L.makeTitle(d, 0).title.includes('강아지'));
+}
 
 console.log(`\n단위 테스트: ${pass} 통과 / ${fail} 실패`);
 process.exit(fail ? 1 : 0);

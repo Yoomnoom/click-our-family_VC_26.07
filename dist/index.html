@@ -267,7 +267,7 @@ function evaluateConditions(lv,ms,A){return lv.conds.map(c=>!!CONDS[c.type](c,ms
 
 /* ----- 레벨 데이터 (6레벨: 거실·생일 파티·캠핑장·벚꽃 공원·해변 테라스·할머니 댁, V2.2 타임라인) ----- */
 const LEVELS=[
- {id:'living1',scene:'거실',title:'첫 가족사진',bg:'assets/poses/living-room2_m2.png',floor:.80,
+ {id:'living1',scene:'거실',title:'첫 가족사진',bg:'assets/poses/living-room2_m.png',floor:.80,
   conds:[{type:'faces',min:3,label:'얼굴 3개 보이기'},{type:'big',ratio:1.12,label:'한 명은 크게 앞으로'}],
   chaos:[
    {id:'dadEyes',at:2.2,actor:'dad',pose:'dad-p4',bubble:'아빠 눈 감는다!'},
@@ -277,7 +277,7 @@ const LEVELS=[
   startUnmet:1,
   start:[[['mom',18,12],['dad',40,14],['sis',62,12],['bro',82,13]],[['mom',20,13],['dad',42,12],['sis',62,14],['bro',80,12]]],
   canon:[['mom',18,12],['dad',40,14],['sis',62,12],['bro',82,-4]]},
- {id:'living2',scene:'생일 파티',title:'키 큰 사람은 뒤로',bg:'assets/poses/birthday-room.png',floor:.82,
+ {id:'living2',scene:'생일 파티',title:'키 큰 사람은 뒤로',bg:'assets/poses/birthday-room-m.png',floor:.82,
   conds:[{type:'behind',back:'dad',front:'mom',gap:2.5,label:'아빠는 엄마 뒤로!'},{type:'close',a:'mom',b:'dad',max:.22,label:'엄마 아빠 꼭 붙기'}],
   chaos:[
    {id:'sisPhone',at:2.3,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
@@ -287,7 +287,7 @@ const LEVELS=[
   startUnmet:0,
   start:[[['mom',40,10],['dad',50,6],['sis',18,8],['bro',82,6]],[['mom',42,11],['dad',52,7],['sis',20,6],['bro',80,8]]],
   canon:[['mom',40,10],['dad',50,17],['sis',18,8],['bro',82,6]]},
- {id:'living3',outdoor:true,scene:'캠핑장',title:'사고 직전 가족사진',bg:'assets/poses/campsite.png',floor:.76,
+ {id:'living3',outdoor:true,scene:'캠핑장',title:'사고 직전 가족사진',bg:'assets/poses/campsite-m.png',floor:.76,
   conds:[{type:'triangle',minArea:.037,minSide:.1,label:'삼각 구도 만들기'},{type:'special',min:1,label:'한 명은 특수 자세'}],
   chaos:[
    {id:'dadSneeze',at:2.0,actor:'dad',pose:'dad-p1',bubble:'아빠 에취!'},
@@ -299,7 +299,7 @@ const LEVELS=[
   startUnmet:1,
   start:[[['mom',50,18],['dad',18,8],['sis',66,10],['bro',50,5]],[['mom',48,18],['dad',17,9],['sis',68,9],['bro',52,6]]],
   canon:[['mom',50,18],['dad',18,8],['sis',66,10,'sis-p6'],['bro',50,-4]]},
- {id:'park4',outdoor:true,scene:'벚꽃 공원',title:'동생 옆에 꼭 붙어요',bg:'assets/poses/cherry-blossom-park.png',floor:.70,
+ {id:'park4',outdoor:true,scene:'벚꽃 공원',title:'동생 옆에 꼭 붙어요',bg:'assets/poses/cherry-blossom-park-m.png',floor:.70,
   conds:[{type:'faces',min:4,label:'얼굴 4개 모두 보이기'},{type:'close',a:'sis',b:'bro',max:.2,label:'누나·동생 꼭 붙기'}],
   chaos:[
    {id:'sisPhone',at:2.3,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
@@ -309,7 +309,7 @@ const LEVELS=[
   startUnmet:1,
   start:[[['mom',16,12],['dad',38,14],['sis',58,12],['bro',84,13]],[['mom',18,13],['dad',40,12],['sis',62,14],['bro',86,12]]],
   canon:[['mom',18,12],['dad',40,14],['sis',64,12],['bro',80,10]]},
- {id:'beach5',outdoor:true,scene:'해변 테라스',title:'엄마는 동생 뒤로',bg:'assets/poses/beach.png',floor:.74,
+ {id:'beach5',outdoor:true,scene:'해변 테라스',title:'엄마는 동생 뒤로',bg:'assets/poses/beach-m.png',floor:.74,
   conds:[{type:'behind',back:'mom',front:'bro',gap:2.5,label:'엄마는 동생 뒤로!'},{type:'special',min:1,label:'한 명은 특수 자세'}],
   chaos:[
    {id:'sisPhone',at:2.3,actor:'sis',pose:'sis-p1',bubble:'누나는 폰 보는 중!'},
@@ -319,7 +319,7 @@ const LEVELS=[
   startUnmet:1,
   start:[[['mom',40,16],['dad',66,12],['sis',16,10],['bro',48,8]],[['mom',42,15],['dad',68,11],['sis',18,9],['bro',50,7]]],
   canon:[['mom',40,16],['dad',66,12],['sis',16,10,'sis-p6'],['bro',48,8]]},
- {id:'house6',scene:'할머니 댁',title:'온 가족 마지막 사진',bg:'assets/poses/grandparents-house.png',floor:.72,
+ {id:'house6',scene:'할머니 댁',title:'온 가족 마지막 사진',bg:'assets/poses/grandparents-house-m.png',floor:.72,
   conds:[{type:'triangle',minArea:.037,minSide:.1,label:'삼각 구도 만들기'},{type:'close',a:'mom',b:'dad',max:.22,label:'엄마 아빠 꼭 붙기'}],
   chaos:[
    {id:'dadEyes',at:2.2,actor:'dad',pose:'dad-p4',bubble:'아빠 눈 감는다!'},

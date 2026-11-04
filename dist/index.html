@@ -882,6 +882,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   $('#titleRestart').addEventListener('click',async()=>{sfx('go');currentLevel=1;store.set(KEY.level,'1');order=newOrder();await preloadDone;enterLevel()});   /* 타이틀의 '처음부터': 1단계로 돌아가 새로 시작 */
   $('#retryBtn').addEventListener('click',retry);   /* 결과 화면의 '한 번 더 찍기' */
   /* 🏠: 홈으로(✕로 닫으면 계속) */
+  ['#gameMenu','#missionIntro'].forEach(q=>$(q).addEventListener('pointerdown',e=>e.stopPropagation()));   /* 팝업 위 터치가 stage의 드래그로 전달돼 첫 클릭을 놓치던 문제 */
   const gm=$('#gameMenu'),closeMenu=()=>{gm.classList.remove('show');if(pausedAt!=null){pausedTotal+=performance.now()-pausedAt;pausedAt=null}};$('#menuBtn').addEventListener('click',()=>{if(pausedAt==null&&(phase==='staging'||phase==='ready'||phase==='chaos'))pausedAt=performance.now();gm.classList.add('show')});$('#menuClose').addEventListener('click',closeMenu);
   $('#menuHome').addEventListener('click',()=>{show('title');try{closeMenu();resultTimers.forEach(clearTimeout);abortRound();$('#missionIntro').classList.remove('show')}catch(e){phase='idle'}});
   $('#shutter').addEventListener('click',takePhoto);

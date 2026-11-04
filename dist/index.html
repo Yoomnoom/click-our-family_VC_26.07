@@ -644,10 +644,10 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function planBoar(){if(!cfg.outdoor)return;
     const seen=store.get(KEY.boar,'0')==='1',later=order.slice(currentLevel).some(i=>LEVELS[i].outdoor),forced=!seen&&!later&&boarChance>0;
     if(!forced&&Math.random()>=boarChance)return;
-    const cat=S.pending.find(e=>e.kind==='cat'),pickI=()=>1.3+Math.random()*(forced?1.7:3.2),lead=BOAR_RUN+BOAR_SWEEP,clash=I=>cat&&cat.at<I+lead+CAT_HOLD+.3;let I=pickI();
+    const cat=S.pending.find(e=>e.kind==='cat'),pickI=()=>1.3+Math.random()*(forced?1.7:3.2),sw=Math.random()<.5,lead=BOAR_RUN+(sw?BOAR_SWEEP:0),clash=I=>cat&&cat.at<I+lead+CAT_HOLD+.3;let I=pickI();
     for(let k=0;k<30&&clash(I);k++)I=pickI();   /* 동물 사고는 멧돼지가 시작되기 전에 끝나야 한다 */
     if(clash(I))S.pending=S.pending.filter(e=>e!==cat);   /* 끝낼 수 없으면 이번 사진은 멧돼지만 */
-    S.boar={impact:+I.toFixed(2),dir:Math.random()<.5?1:-1,started:false,stay:true,sweep:true};   /* stay: 충돌 뒤 사진이 찍힐 때까지(시간 끝 자동 촬영 포함) 쓰러진 모습을 유지 */
+    S.boar={impact:+I.toFixed(2),dir:Math.random()<.5?1:-1,started:false,stay:true,sweep:sw};   /* stay: 충돌 뒤 사진이 찍힐 때까지(시간 끝 자동 촬영 포함) 쓰러진 모습을 유지 */
     S.pending.push({id:'boar',kind:'boar',at:S.boar.impact+lead})}
   /* 달려오는 쪽에서 가장 가까운 사람(사고·잠금 중이 아닌 사람 우선)과, 그 사람 옆 충돌 자리가 화면 안에 들어오는지 */
   function boarTarget(dir){const sr=stage.getBoundingClientRect(),ms=memberEls().sort((a,c)=>dir*(parseFloat(a.style.left)-parseFloat(c.style.left))),cand=ms.filter(m=>!m.dataset.accident&&!m.dataset.locked),t=(cand.length?cand:ms)[Math.floor(Math.random()*(cand.length||ms.length))];if(!t)return null;   /* 맞는 사람은 무작위(양끝만 맞으면 모두 같은 쪽으로 쓰러진다) */
@@ -657,7 +657,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     if(pick&&!pick.ok){const alt=boarTarget(-b.dir);if(alt&&alt.ok){b.dir=-b.dir;pick=alt}}   /* 화면 가장자리에 서 있는 사람이면 반대쪽에서 달려오게 해서 멧돼지가 잘리지 않게 한다 */
     if(!pick)return;const dir=b.dir,t=pick.t;b.target=t.dataset.id;b.y=t._base;
     const bases=memberEls().map(x=>x._base),front=Math.min(...bases),back=Math.max(...bases),lo=Math.max(0,front-3-Math.random()*3),hi=back+9+Math.random()*7,fwd=Math.random()<.5;   /* 지나가는 길: 가족 뒤(작게)와 앞(크게)을 오간다. 방향은 무작위 */
-    b.y0=fwd?hi:lo;b.y1=fwd?lo:hi;b.yF=Math.max(0,front-2);
+    b.y0=fwd?hi:lo;b.y1=b.sweep||fwd?(fwd?lo:hi):(Math.random()<.5?hi:lo);   /* 한 바퀴 안 도는 판은 뒤(작게→크게)나 앞에서 곧장 달려든다 */b.yF=Math.max(0,front-2);
     S.pending=S.pending.filter(e=>e.kind==='cat'||e.kind==='boar');   /* 멧돼지가 시작된 뒤에는 다른 사고를 멈춘다(모두 놀라 있는 상태로 사진이 찍히게) */
     const img=document.createElement('img');img.className='photo-pet boar';img.alt=ANIMALS.boar.alt;img.src=ANIMALS.boar.file(1);img.style.pointerEvents='none';img.style.display='block';
     pet.parentNode.appendChild(img);boarEl=img;b.pose=1;b.xs=dir>0?135:-35;b.x0=dir>0?-35:135;b.xOut=dir>0?135:-35;b.xc=pick.xc;b.started=true;store.set(KEY.boar,'1');

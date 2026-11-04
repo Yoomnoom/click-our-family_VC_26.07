@@ -642,10 +642,11 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     S.boar={impact:+I.toFixed(2),dir:Math.random()<.5?1:-1,started:false,stay:true,sweep:true};   /* stay: 충돌 뒤 사진이 찍힐 때까지(시간 끝 자동 촬영 포함) 쓰러진 모습을 유지 */
     S.pending.push({id:'boar',kind:'boar',at:S.boar.impact+lead})}
   /* 달려오는 쪽에서 가장 가까운 사람(사고·잠금 중이 아닌 사람 우선)과, 그 사람 옆 충돌 자리가 화면 안에 들어오는지 */
-  function boarTarget(dir){const sr=stage.getBoundingClientRect(),ms=memberEls().sort((a,c)=>dir*(parseFloat(a.style.left)-parseFloat(c.style.left))),t=ms.find(m=>!m.dataset.accident&&!m.dataset.locked)||ms[0];if(!t)return null;
+  function boarTarget(dir){const sr=stage.getBoundingClientRect(),ms=memberEls().sort((a,c)=>dir*(parseFloat(a.style.left)-parseFloat(c.style.left))),cand=ms.filter(m=>!m.dataset.accident&&!m.dataset.locked),t=(cand.length?cand:ms)[Math.floor(Math.random()*(cand.length||ms.length))];if(!t)return null;   /* 맞는 사람은 무작위(양끝만 맞으면 모두 같은 쪽으로 쓰러진다) */
     const c=containerBox(t,sr),bw=c.hc*.62*sr.height/sr.width*1.2*.8,xc=parseFloat(t.style.left)-dir*(bw*.38+c.wc*.3);return{t,xc:Math.max(bw*.55,Math.min(100-bw*.55,xc)),ok:xc>bw*.4&&xc<100-bw*.4}}
   function launchBoar(ev,rem){const b=S.boar;if(!b)return;const I=b.impact;
-    let pick=boarTarget(b.dir);if(pick&&!pick.ok){const alt=boarTarget(-b.dir);if(alt&&alt.ok){b.dir=-b.dir;pick=alt}}   /* 화면 가장자리에 서 있는 사람이면 반대쪽에서 달려오게 해서 멧돼지가 잘리지 않게 한다 */
+    let pick=null;for(let k=0;k<8;k++){const c=boarTarget(b.dir);if(c&&c.ok){pick=c;break}if(!pick)pick=c}
+    if(pick&&!pick.ok){const alt=boarTarget(-b.dir);if(alt&&alt.ok){b.dir=-b.dir;pick=alt}}   /* 화면 가장자리에 서 있는 사람이면 반대쪽에서 달려오게 해서 멧돼지가 잘리지 않게 한다 */
     if(!pick)return;const dir=b.dir,t=pick.t;b.target=t.dataset.id;b.y=t._base;
     S.pending=S.pending.filter(e=>e.kind==='cat'||e.kind==='boar');   /* 멧돼지가 시작된 뒤에는 다른 사고를 멈춘다(모두 놀라 있는 상태로 사진이 찍히게) */
     const img=document.createElement('img');img.className='photo-pet boar';img.alt=ANIMALS.boar.alt;img.src=ANIMALS.boar.file(1);img.style.pointerEvents='none';img.style.display='block';
@@ -672,6 +673,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     const prev=m.dataset.accident&&m.dataset.accident!=='boar'?BASE[b.target]:m.dataset.poseId,hit=boarPose(b.target,b.dir);
     m.dataset.accident='boar';setPose(m,hit,true);flashTimer();sfx('boing');buzz([20,30,40]);bubble(m,'으악!',BOAR_HOLD*1000-200);const stay=!!b.stay;
     shove(m,hit,[BOAR_PUSH,9,5,0].map(d=>d*b.dir));
+    memberEls().forEach(o=>{if(o===m||o.dataset.accident!=='boar')return;const away=parseFloat(o.style.left)>b.xc?1:-1,hp=boarPose(o.dataset.id,away);if(o.dataset.poseId!==hp){setPose(o,hp,true);shove(o,hp,[3*away,0])}});   /* 이미 놀란 가족도 멧돼지가 있는 곳의 반대쪽으로 쓰러지게 다시 맞춘다 */
     lockMember(m,rem,stay?rem+1:BOAR_HOLD-.1);if(!stay)restoreLater(m,prev,rem,BOAR_HOLD,'boar');S.fired.push({ev:{id:'boar',kind:'boar'},firedAt:rem})}
 
   /* ---------- 사고 실행 ---------- */

@@ -337,7 +337,7 @@ const DUO_BONUS=120,CAT_BONUS=300,BOAR_BONUS=300;
    BOAR_CHANCE: 야외 판에서 나올 확률(조정은 여기서). BOAR_HOLD: 충돌 후 멧돼지·가족 포즈를 유지하는 초(셔터 기회).
    한 번의 움직임은 '충돌 시각 impact(남은 초)'만 정하면 결정된다: 달려옴(RUN-NOTICE) → 놀람(NOTICE, 멈추지 못하고 미끄러짐) → 충돌·어지러움(HOLD) → 퇴장(EXIT) */
 const HIT_FACES={1:[1,2],2:[2,1],3:[3],4:[4,3]};   /* 충돌 장면의 표정(그림 4종 모두 마지막 컷이 될 수 있다): 1·2 화난 얼굴, 3 놀란 얼굴, 4 어질어질 */
-const BOAR_CHANCE=.3,BOAR_HOLD=1.6,BOAR_RUN=1.15,BOAR_NOTICE=.35,BOAR_EXIT=.7,BOAR_SKID=10,BOAR_PUSH=13,BOAR_SWEEP=1.3;
+const BOAR_CHANCE=.5,BOAR_HOLD=1.6,BOAR_RUN=1.15,BOAR_NOTICE=.35,BOAR_EXIT=.7,BOAR_SKID=10,BOAR_PUSH=13,BOAR_SWEEP=1.3;
 function boarFrame(p,rem){const I=p.impact,T0=I+BOAR_RUN,Tn=I+BOAR_NOTICE,Te=p.stay?-Infinity:I-BOAR_HOLD,xn=p.xc-p.dir*BOAR_SKID,run=t=>Math.floor(t/.14)%2?2:1,Y=(a,b,k)=>p.yF==null?undefined:a+(b-a)*k;   /* Y: 깊이(바닥 높이 %) 보간. y0→y1 은 가족 앞뒤를 지나는 길, 그 뒤 yF(가족 맨 앞)로 다가온다 */
   const Ts=p.sweep?T0+BOAR_SWEEP:T0;   /* sweep: 반대쪽 끝에서 가족 앞을 가로질러 한 바퀴 돈 뒤 충돌하러 되돌아온다 */
   if(rem>Ts)return null;

@@ -336,14 +336,15 @@ const DUO_BONUS=120,CAT_BONUS=300,BOAR_BONUS=300;
 /* ----- 멧돼지 돌발 사고(야외 배경만) -----
    BOAR_CHANCE: 야외 판에서 나올 확률(조정은 여기서). BOAR_HOLD: 충돌 후 멧돼지·가족 포즈를 유지하는 초(셔터 기회).
    한 번의 움직임은 '충돌 시각 impact(남은 초)'만 정하면 결정된다: 달려옴(RUN-NOTICE) → 놀람(NOTICE, 멈추지 못하고 미끄러짐) → 충돌·어지러움(HOLD) → 퇴장(EXIT) */
+const HIT_FACES={1:[1,2],2:[2,1],3:[3],4:[4,3]};   /* 충돌 장면의 표정(그림 4종 모두 마지막 컷이 될 수 있다): 1·2 화난 얼굴, 3 놀란 얼굴, 4 어질어질 */
 const BOAR_CHANCE=.3,BOAR_HOLD=1.6,BOAR_RUN=1.15,BOAR_NOTICE=.35,BOAR_EXIT=.7,BOAR_SKID=10,BOAR_PUSH=13,BOAR_SWEEP=1.3;
 function boarFrame(p,rem){const I=p.impact,T0=I+BOAR_RUN,Tn=I+BOAR_NOTICE,Te=p.stay?-Infinity:I-BOAR_HOLD,xn=p.xc-p.dir*BOAR_SKID,run=t=>Math.floor(t/.14)%2?2:1,Y=(a,b,k)=>p.yF==null?undefined:a+(b-a)*k;   /* Y: 깊이(바닥 높이 %) 보간. y0→y1 은 가족 앞뒤를 지나는 길, 그 뒤 yF(가족 맨 앞)로 다가온다 */
   const Ts=p.sweep?T0+BOAR_SWEEP:T0;   /* sweep: 반대쪽 끝에서 가족 앞을 가로질러 한 바퀴 돈 뒤 충돌하러 되돌아온다 */
   if(rem>Ts)return null;
   if(rem>T0)return{x:p.xs+(p.x0-p.xs)*(Ts-rem)/BOAR_SWEEP,pose:run(Ts-rem),phase:'sweep',dir:-p.dir,y:Y(p.y0,p.y1,(Ts-rem)/BOAR_SWEEP)};
   if(rem>Tn)return{x:p.x0+(xn-p.x0)*(T0-rem)/(BOAR_RUN-BOAR_NOTICE),pose:run(T0-rem),phase:'run',y:Y(p.y1,p.yF,(T0-rem)/(BOAR_RUN-BOAR_NOTICE))};
-  if(rem>I)return{x:xn+(p.xc-xn)*(Tn-rem)/BOAR_NOTICE,pose:3,phase:'notice',y:p.yF};
-  if(rem>Te)return{x:p.xc,pose:p.stay&&Math.floor((I-rem)/.6)%2?3:4,phase:'hit',y:p.yF};
+  if(rem>I)return{x:xn+(p.xc-xn)*(Tn-rem)/BOAR_NOTICE,pose:p.face===1||p.face===2?run(Tn-rem):3,phase:'notice',y:p.yF};
+  if(rem>Te)return{x:p.xc,pose:HIT_FACES[p.face||4][p.stay?Math.floor((I-rem)/.6)%HIT_FACES[p.face||4].length:0],phase:'hit',y:p.yF};
   const k=(Te-rem)/BOAR_EXIT;if(k>=1)return null;
   return{x:p.xc+(p.xOut-p.xc)*k,pose:run(Te-rem),phase:'exit',y:p.yF}}
 const RARITY={normal:{label:'평범한 한 장',icon:'📷'},funny:{label:'제법 웃김',icon:'😆'},disaster:{label:'대참사',icon:'💥'},legend:{label:'전설의 가족사진',icon:'👑'}};
@@ -647,7 +648,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     const cat=S.pending.find(e=>e.kind==='cat'),pickI=()=>1.3+Math.random()*(forced?1.7:3.2),sw=Math.random()<.5,lead=BOAR_RUN+(sw?BOAR_SWEEP:0),clash=I=>cat&&cat.at<I+lead+CAT_HOLD+.3;let I=pickI();
     for(let k=0;k<30&&clash(I);k++)I=pickI();   /* 동물 사고는 멧돼지가 시작되기 전에 끝나야 한다 */
     if(clash(I))S.pending=S.pending.filter(e=>e!==cat);   /* 끝낼 수 없으면 이번 사진은 멧돼지만 */
-    S.boar={impact:+I.toFixed(2),dir:Math.random()<.5?1:-1,started:false,stay:true,sweep:sw};   /* stay: 충돌 뒤 사진이 찍힐 때까지(시간 끝 자동 촬영 포함) 쓰러진 모습을 유지 */
+    S.boar={impact:+I.toFixed(2),dir:Math.random()<.5?1:-1,started:false,stay:true,sweep:sw,face:1+Math.floor(Math.random()*4)};   /* stay: 충돌 뒤 사진이 찍힐 때까지(시간 끝 자동 촬영 포함) 쓰러진 모습을 유지 */
     S.pending.push({id:'boar',kind:'boar',at:S.boar.impact+lead})}
   /* 달려오는 쪽에서 가장 가까운 사람(사고·잠금 중이 아닌 사람 우선)과, 그 사람 옆 충돌 자리가 화면 안에 들어오는지 */
   function boarTarget(dir){const sr=stage.getBoundingClientRect(),ms=memberEls().sort((a,c)=>dir*(parseFloat(a.style.left)-parseFloat(c.style.left))),cand=ms.filter(m=>!m.dataset.accident&&!m.dataset.locked),t=(cand.length?cand:ms)[Math.floor(Math.random()*(cand.length||ms.length))];if(!t)return null;   /* 맞는 사람은 무작위(양끝만 맞으면 모두 같은 쪽으로 쓰러진다) */

@@ -543,7 +543,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     kinds.forEach(k=>{const at=[.8,1.35,1.65,1.9,2.5,.5].find(c=>taken.concat(out.map(o=>o.at)).every(t=>Math.abs(t-c)>=.2))||.8;
       out.push({id:k,at,kind:'cat',animal:k,catchAfter:.15,bump:'always',bubble:ANIMALS[k].bubble})});return out}
   $('#best').textContent=best.toLocaleString();
-  const now=()=>performance.now()/1000;
+  let pausedAt=null,pausedTotal=0;const now=()=>((pausedAt==null?performance.now():pausedAt)-pausedTotal)/1000;   /* 🏠 팝업이 떠 있는 동안 게임 시간을 멈춘다 */
   const el=id=>$(`.family-member[data-id="${id}"]`);
   const memberEls=()=>$$('.family-member');
   /* 포즈 24장 + 고양이·배경 프리로드(decode 까지) — 사고 중 포즈 교체에서 빈 프레임이 보이면 안 된다 */
@@ -880,9 +880,10 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   $$('.difficulty button').forEach(b=>b.addEventListener('click',()=>setDifficulty(b.dataset.difficulty)));setDifficulty(difficulty);
   $('#startBtn').addEventListener('click',async()=>{sfx('go');if(currentLevel===1)order=newOrder();await preloadDone;enterLevel()});$('#missionStart').addEventListener('click',beginStaging);$('#nextBtn').addEventListener('click',advance);
   $('#titleRestart').addEventListener('click',async()=>{sfx('go');currentLevel=1;store.set(KEY.level,'1');order=newOrder();await preloadDone;enterLevel()});   /* 타이틀의 '처음부터': 1단계로 돌아가 새로 시작 */
-  /* 🏠: 홈으로 / 계속하기(진행은 유지) */
-  const gm=$('#gameMenu'),closeMenu=()=>gm.classList.remove('show');$('#menuBtn').addEventListener('click',()=>gm.classList.add('show'));$('#menuClose').addEventListener('click',closeMenu);
-  $('#menuHome').addEventListener('click',()=>{closeMenu();resultTimers.forEach(clearTimeout);abortRound();$('#missionIntro').classList.remove('show');show('title')});
+  $('#retryBtn').addEventListener('click',retry);   /* 결과 화면의 '한 번 더 찍기' */
+  /* 🏠: 홈으로(✕로 닫으면 계속) */
+  const gm=$('#gameMenu'),closeMenu=()=>{gm.classList.remove('show');if(pausedAt!=null){pausedTotal+=performance.now()-pausedAt;pausedAt=null}};$('#menuBtn').addEventListener('click',()=>{if(pausedAt==null&&(phase==='staging'||phase==='ready'||phase==='chaos'))pausedAt=performance.now();gm.classList.add('show')});$('#menuClose').addEventListener('click',closeMenu);
+  $('#menuHome').addEventListener('click',()=>{show('title');try{closeMenu();resultTimers.forEach(clearTimeout);abortRound();$('#missionIntro').classList.remove('show')}catch(e){phase='idle'}});
   $('#shutter').addEventListener('click',takePhoto);
   stage.addEventListener('pointerdown',beginDrag);window.addEventListener('pointermove',moveDrag,{passive:false});window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);window.addEventListener('pointermove',movePetDrag,{passive:false});window.addEventListener('pointerup',endPetDrag);window.addEventListener('pointercancel',endPetDrag);
   $$('.open-gallery').forEach(b=>b.addEventListener('click',openGallery));$('#closeGallery').addEventListener('click',closeGallery);$('#galleryHome').addEventListener('click',()=>show('title'));$('#zoomBox').addEventListener('click',closeZoom);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeZoom()});

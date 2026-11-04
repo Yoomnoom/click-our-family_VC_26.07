@@ -648,7 +648,7 @@ if(typeof module!=='undefined')module.exports={freeSpot,footBlocked,BLOCKS,NAMES
     toast('멧돼지가 달려와요!',true);sfx('boing');buzz(15);schedule(I,r=>impactBoar(r))}
   function boarGeom(){const b=S.boar,t=el(b.target),sr=stage.getBoundingClientRect(),c=containerBox(t,sr);return{t,sr,c,h:c.hc*.62}}
   function driveBoar(rem){const b=S.boar;if(!b||!b.started||!boarEl)return;const g=boarGeom();
-    boarEl.style.height=g.h+'%';boarEl.style.width=(g.h*g.sr.height/g.sr.width*1.2)+'%';boarEl.style.bottom=(b.y-1)+'%';boarEl.style.zIndex=String(zOf(b.y)+1);
+    boarEl.style.height=g.h+'%';boarEl.style.width=(g.h*g.sr.height/g.sr.width*1.2)+'%';boarEl.style.bottom=(b.y-1)+'%';boarEl.style.zIndex=String(Math.max(zOf(b.y),...memberEls().map(m=>Number(m.style.zIndex)||0))+1);   /* 앞에 선 가족에게 가려지지 않게 모든 가족보다 앞 */
     if(rem>b.impact){const bw=boarEl.getBoundingClientRect().width/g.sr.width*100;b.xc=Math.max(bw*.55,Math.min(100-bw*.55,parseFloat(g.t.style.left)-b.dir*(bw*.38+g.c.wc*.3)))}
     const f=boarFrame(b,rem);if(!f){boarEl.style.display='none';return}
     boarEl.style.display='block';boarEl.style.left=f.x+'%';if(f.pose!==b.pose){b.pose=f.pose;boarEl.src=ANIMALS.boar.file(f.pose)}}

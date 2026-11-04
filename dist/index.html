@@ -267,7 +267,7 @@ function evaluateConditions(lv,ms,A){return lv.conds.map(c=>!!CONDS[c.type](c,ms
 
 /* ----- 레벨 데이터 (6레벨: 거실·생일 파티·캠핑장·벚꽃 공원·해변 테라스·할머니 댁, V2.2 타임라인) ----- */
 const LEVELS=[
- {id:'living1',scene:'거실',title:'첫 가족사진',bg:'assets/poses/living-room2.png',floor:.80,
+ {id:'living1',scene:'거실',title:'첫 가족사진',bg:'assets/poses/living-room2.png',bgPortrait:'assets/poses/living-room2_m.png',floor:.80,
   conds:[{type:'faces',min:3,label:'얼굴 3개 보이기'},{type:'big',ratio:1.12,label:'한 명은 크게 앞으로'}],
   chaos:[
    {id:'dadEyes',at:2.2,actor:'dad',pose:'dad-p4',bubble:'아빠 눈 감는다!'},

@@ -250,5 +250,10 @@ t('복귀: 사고 포즈는 hold 초 안에만 보이고 그 뒤 시작 포즈�
   t('고양이 사진 제목에는 "고양이", 강아지는 "강아지"', L.makeTitle(k, 0).title.includes('고양이') && L.makeTitle(d, 0).title.includes('강아지'));
 }
 
+// boarFrame: stay 이면 충돌 뒤 퇴장하지 않고 끝까지 쓰러진 모습을 유지한다 (시간 끝 자동 촬영에도 담김)
+{const P={impact:3,dir:1,x0:-35,xc:50,xOut:135,stay:true};
+ t('boar stay: hold 이후에도 hit 유지', L.boarFrame(P,3-L.BOAR_HOLD-.2).phase==='hit');
+ t('boar stay: 시간 끝(0초)에도 hit', L.boarFrame(P,0).phase==='hit');
+ t('boar no-stay: 퇴장 후 사라짐', L.boarFrame({...P,stay:false},0)===null);}
 console.log(`\n단위 테스트: ${pass} 통과 / ${fail} 실패`);
 process.exit(fail ? 1 : 0);

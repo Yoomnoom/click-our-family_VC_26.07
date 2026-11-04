@@ -332,7 +332,7 @@ const DUO_BONUS=120,CAT_BONUS=300,BOAR_BONUS=300;
    BOAR_CHANCE: 야외 판에서 나올 확률(조정은 여기서). BOAR_HOLD: 충돌 후 멧돼지·가족 포즈를 유지하는 초(셔터 기회).
    한 번의 움직임은 '충돌 시각 impact(남은 초)'만 정하면 결정된다: 달려옴(RUN-NOTICE) → 놀람(NOTICE, 멈추지 못하고 미끄러짐) → 충돌·어지러움(HOLD) → 퇴장(EXIT) */
 const BOAR_CHANCE=.3,BOAR_HOLD=1.6,BOAR_RUN=1.15,BOAR_NOTICE=.35,BOAR_EXIT=.7,BOAR_SKID=10,BOAR_PUSH=13;
-function boarFrame(p,rem){const I=p.impact,T0=I+BOAR_RUN,Tn=I+BOAR_NOTICE,Te=I-BOAR_HOLD,xn=p.xc-p.dir*BOAR_SKID,run=t=>Math.floor(t/.14)%2?2:1;
+function boarFrame(p,rem){const I=p.impact,T0=I+BOAR_RUN,Tn=I+BOAR_NOTICE,Te=p.stay?-Infinity:I-BOAR_HOLD,xn=p.xc-p.dir*BOAR_SKID,run=t=>Math.floor(t/.14)%2?2:1;
   if(rem>T0)return null;
   if(rem>Tn)return{x:p.x0+(xn-p.x0)*(T0-rem)/(BOAR_RUN-BOAR_NOTICE),pose:run(T0-rem),phase:'run'};
   if(rem>I)return{x:xn+(p.xc-xn)*(Tn-rem)/BOAR_NOTICE,pose:3,phase:'notice'};
@@ -634,14 +634,14 @@ if(typeof module!=='undefined')module.exports={freeSpot,footBlocked,BLOCKS,NAMES
     if(!forced&&Math.random()>=boarChance)return;
     const cat=S.pending.find(e=>e.kind==='cat');let I=2.2+Math.random()*(forced?2:4.4);
     for(let k=0;k<30&&cat&&(I+BOAR_RUN>cat.at-.5&&I-BOAR_HOLD-BOAR_EXIT<cat.at+CAT_HOLD);k++)I=2.2+Math.random()*(forced?2:4.4);   /* 고양이 사고와 겹치면 시각을 다시 뽑는다 */
-    S.boar={impact:+I.toFixed(2),dir:Math.random()<.5?1:-1,started:false};S.pending.push({id:'boar',kind:'boar',at:S.boar.impact+BOAR_RUN})}
+    S.boar={impact:+I.toFixed(2),dir:Math.random()<.5?1:-1,started:false,stay:true};   /* stay: 충돌 뒤 사진이 찍힐 때까지(시간 끝 자동 촬영 포함) 쓰러진 모습을 유지 */S.pending.push({id:'boar',kind:'boar',at:S.boar.impact+BOAR_RUN})}
   /* 달려오는 쪽에서 가장 가까운 사람(사고·잠금 중이 아닌 사람 우선)과, 그 사람 옆 충돌 자리가 화면 안에 들어오는지 */
   function boarTarget(dir){const sr=stage.getBoundingClientRect(),ms=memberEls().sort((a,c)=>dir*(parseFloat(a.style.left)-parseFloat(c.style.left))),t=ms.find(m=>!m.dataset.accident&&!m.dataset.locked)||ms[0];if(!t)return null;
     const c=containerBox(t,sr),bw=c.hc*.62*sr.height/sr.width*1.2*.8,xc=parseFloat(t.style.left)-dir*(bw*.38+c.wc*.3);return{t,xc:Math.max(bw*.55,Math.min(100-bw*.55,xc)),ok:xc>bw*.4&&xc<100-bw*.4}}
   function launchBoar(ev,rem){const b=S.boar;if(!b)return;const I=b.impact;
     let pick=boarTarget(b.dir);if(pick&&!pick.ok){const alt=boarTarget(-b.dir);if(alt&&alt.ok){b.dir=-b.dir;pick=alt}}   /* 화면 가장자리에 서 있는 사람이면 반대쪽에서 달려오게 해서 멧돼지가 잘리지 않게 한다 */
     if(!pick)return;const dir=b.dir,t=pick.t;b.target=t.dataset.id;b.y=t._base;
-    S.pending=S.pending.filter(e=>!(e.actor===b.target&&e.at<=I+.3&&e.at>=I-BOAR_HOLD-.5));   /* 맞을 사람의 다른 사고는 충돌 전후로 비켜 준다 */
+    S.pending=S.pending.filter(e=>!(e.actor===b.target&&e.at<=I+.3&&(b.stay||e.at>=I-BOAR_HOLD-.5)));   /* 맞을 사람의 다른 사고는 충돌 전후로 비켜 준다 */
     const img=document.createElement('img');img.className='photo-pet boar';img.alt=ANIMALS.boar.alt;img.src=ANIMALS.boar.file(1);img.style.pointerEvents='none';img.style.display='block';
     if(dir<0){img.style.scale='-1 1';img.style.translate='-100% 0'}
     pet.parentNode.appendChild(img);boarEl=img;b.pose=1;b.x0=dir>0?-35:135;b.xOut=dir>0?135:-35;b.xc=pick.xc;b.started=true;store.set(KEY.boar,'1');
@@ -655,11 +655,11 @@ if(typeof module!=='undefined')module.exports={freeSpot,footBlocked,BLOCKS,NAMES
   function impactBoar(rem){const b=S.boar,m=el(b.target);if(!b||!m)return;
     if(drag&&drag.m===m)releaseDrag();
     const prev=m.dataset.accident&&m.dataset.accident!=='boar'?BASE[b.target]:m.dataset.poseId,hit=b.target+'-p7';
-    m.dataset.accident='boar';setPose(m,hit,true);flashTimer();sfx('boing');buzz([20,30,40]);bubble(m,'으악!',BOAR_HOLD*1000-200);
+    m.dataset.accident='boar';setPose(m,hit,true);flashTimer();sfx('boing');buzz([20,30,40]);bubble(m,'으악!',BOAR_HOLD*1000-200);const stay=!!b.stay;
     const sr=stage.getBoundingClientRect(),A=sr.width/sr.height,x0=parseFloat(m.style.left),lim=limitsFor(hit,m.offsetWidth/sr.width*100,m.offsetHeight/sr.height*100,m._base);
     const dx=[BOAR_PUSH,9,5,0].map(d=>d*b.dir).find(d=>!footBlocked(cfg,Math.max(lim.minX,Math.min(lim.maxX,x0+d)),m._base,A));
     place(m,Math.max(lim.minX,Math.min(lim.maxX,x0+(dx||0))),m._base);
-    lockMember(m,rem,BOAR_HOLD-.1);restoreLater(m,prev,rem,BOAR_HOLD,'boar');S.fired.push({ev:{id:'boar',kind:'boar'},firedAt:rem})}
+    lockMember(m,rem,stay?rem+1:BOAR_HOLD-.1);if(!stay)restoreLater(m,prev,rem,BOAR_HOLD,'boar');S.fired.push({ev:{id:'boar',kind:'boar'},firedAt:rem})}
 
   /* ---------- 사고 실행 ---------- */
   let flashT=0;

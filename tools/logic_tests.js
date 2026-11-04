@@ -9,7 +9,8 @@ const canon = i => lv(i).canon.map(([id, x, y, p]) => M(id, x, y, p));
 const PM = L.POSE_META;
 
 // --- POSE_META 무결성 ---
-t('POSE_META 28개(기본 6 × 4 + 멧돼지 충돌 p7 × 4)', Object.keys(PM).length === 28 && ['mom', 'dad', 'sis', 'bro'].every(c => PM[c + '-p7'].role === 'hit'));
+t('POSE_META 32개(기본 6 × 4 + 멧돼지 충돌 p7 × 4 + 좌우반전 p7r × 4)', Object.keys(PM).length === 32 && ['mom', 'dad', 'sis', 'bro'].every(c => PM[c + '-p7'].role === 'hit' && PM[c + '-p7r'].role === 'hit'));
+t('p7r 은 p7 의 좌우반전(bbox·얼굴 위치)', ['mom', 'dad', 'sis', 'bro'].every(c => { const a = PM[c + '-p7'], r = PM[c + '-p7r']; return r.bbox[0] === L.CANVAS.w - a.bbox[2] && r.bbox[2] === L.CANVAS.w - a.bbox[0] && Math.abs(r.face[0] - (100 - a.face[0])) < .11 && r.points === a.points && r.key === a.key; }));
 ['mom', 'dad', 'sis', 'bro'].forEach(c => {
   const ps = Object.keys(PM).filter(k => PM[k].char === c), cnt = r => ps.filter(k => PM[k].role === r).length;
   t(`${c}: base 1 / wave 1 / special 1 / chaos 3`, cnt('base') === 1 && cnt('wave') === 1 && cnt('special') === 1 && cnt('chaos') === 3, ps.map(k => PM[k].role));
@@ -255,5 +256,12 @@ t('복귀: 사고 포즈는 hold 초 안에만 보이고 그 뒤 시작 포즈�
  t('boar stay: hold 이후에도 hit 유지', L.boarFrame(P,3-L.BOAR_HOLD-.2).phase==='hit');
  t('boar stay: 시간 끝(0초)에도 hit', L.boarFrame(P,0).phase==='hit');
  t('boar no-stay: 퇴장 후 사라짐', L.boarFrame({...P,stay:false},0)===null);}
+// boarFrame: sweep 이면 반대쪽에서 가족 앞을 가로질러 간 뒤 충돌하러 되돌아온다
+{const P={impact:3,dir:1,x0:-35,xs:135,xc:50,xOut:135,sweep:true,stay:true},F=r=>L.boarFrame(P,r),T0=3+L.BOAR_RUN;
+ t('sweep: 시작 전에는 화면에 없음', F(T0 + L.BOAR_SWEEP + .01) === null);
+ t('sweep: 반대쪽(오른쪽)에서 왼쪽으로 진행', F(T0 + L.BOAR_SWEEP - .01).phase === 'sweep' && F(T0 + L.BOAR_SWEEP - .01).dir === -1 && F(T0 + L.BOAR_SWEEP - .01).x > 130 && F(T0 + .01).x < -30);
+ t('sweep 직후 충돌 쪽 가장자리에서 달려옴', F(T0 - .01).phase === 'run' && F(T0 - .01).dir === undefined);
+ t('sweep 없는 계획은 기존과 같음', L.boarFrame({...P, sweep: false}, T0 + .01) === null);
+ t('stay: 어지러움 표정이 번갈아(4·3) 바뀜', new Set([0, .7].map(d => F(3 - d - .01).pose)).size === 2);}
 console.log(`\n단위 테스트: ${pass} 통과 / ${fail} 실패`);
 process.exit(fail ? 1 : 0);

@@ -815,8 +815,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     const wrapW=Math.min(560,$('#result').clientWidth*.94)-20;box.style.setProperty('--ph',Math.max(180,Math.min(innerHeight*(innerHeight<700?.5:.52),wrapW/rec.stageRatio))+'px');
     scene.classList.remove('develop');box.classList.remove('shake');scene.style.backgroundImage=`url('${rec.bg}')`;const cap=scenePhoto(scene,rec);renderProps(scene,rec);
     stamp.className='stamp '+rec.rarity;stamp.textContent=rec.rarity==='legend'?'👑 '+RARITY.legend.label:RARITY[rec.rarity].label;
-    ['#scComp','#scMoment','#scChaos','#scTotal'].forEach(s=>$(s).textContent='0');$('#newBest').textContent='';$('#resultComment').textContent=(rec.comment||'').replace(/([?!,.…]) /g,'$1
-');$('#resultComment').style.whiteSpace='pre-line';
+    ['#scComp','#scMoment','#scChaos','#scTotal'].forEach(s=>$(s).textContent='0');$('#newBest').textContent='';$('#resultComment').textContent=(rec.comment||'').replace(/([?!,.…]) /g,'$1'+String.fromCharCode(10));$('#resultComment').style.whiteSpace='pre-line';
     $('#nextBtn').textContent=currentLevel>=LEVELS.length?'다음 사진 (앨범 완성)':'다음 사진';
     void scene.offsetWidth;scene.classList.add('develop');
     later(()=>cap.classList.add('in'),650);

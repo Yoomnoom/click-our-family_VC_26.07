@@ -94,7 +94,7 @@
     .result-wrap{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:1.4vh}
     .photo{--r:.5;--ph:52vh;position:relative;background:#f9f1d9;padding:10px 10px 38px;transform:rotate(-1.2deg);box-shadow:0 20px 45px #0008;flex:none}
     .photo.shake{animation:photo-shake .5s}@keyframes photo-shake{0%,100%{transform:rotate(-1.2deg)}15%{transform:rotate(1.4deg) translate(4px,-3px)}35%{transform:rotate(-2.4deg) translate(-5px,3px)}55%{transform:rotate(.8deg) translate(3px,2px)}75%{transform:rotate(-1.8deg)}}
-    .photo-scene{isolation:isolate;position:relative;overflow:hidden;background:url('assets/poses/living-room2.png') center/cover no-repeat;height:var(--ph);aspect-ratio:var(--r);width:auto;max-width:100%}
+    .photo-scene{isolation:isolate;position:relative;overflow:hidden;background:url('assets/poses/living-room2.png') center calc(50% + 28% * clamp(0,(var(--r,.5) - 1.25) * 100,1))/cover no-repeat;height:var(--ph);aspect-ratio:var(--r);width:auto;max-width:100%}
     .photo-scene.develop{animation:develop .9s ease-out both}
     @keyframes develop{0%{clip-path:inset(0 0 100% 0);filter:blur(12px) sepia(1) brightness(1.6)}55%{clip-path:inset(0 0 0 0);filter:blur(5px) sepia(.7) brightness(1.25)}100%{clip-path:inset(0);filter:none}}
     .mini-image{position:absolute;bottom:1%;left:50%;width:19%;height:72%;object-fit:contain;object-position:center bottom;transform:translateX(-50%);transform-origin:50% 100%;filter:drop-shadow(0 4px 2px #432b2344)}
@@ -215,6 +215,7 @@ const MIN_Y=-30,NEAR_K=.025,FACE_MIN_H=12;   /* y<0: 발이 프레임 아래로 
 const depthScale=y=>y<0?1-y*NEAR_K:Math.max(.68,1-y*.007);
 const zOf=y=>40-Math.round(y);
 /* 세로(폰) 전용 배경: LEVELS 항목에 bgPortrait 가 있으면 세로 화면에서 그것을 쓴다(없으면 가로 배경을 그대로) */
+const BG_WIDE=1.25,BG_WIDE_Y=78;   /* 가로로 긴 화면(폭/높이>1.25)은 정사각 배경을 아래쪽 위주로 보여준다 */
 const bgFor=c=>c.bgPortrait&&typeof matchMedia==='function'&&matchMedia('(max-aspect-ratio:1.25/1)').matches?c.bgPortrait:c.bg;
 const MULT={1:1,.5:.55,0:.25};
 const STAGE_MAX=94;
@@ -561,6 +562,8 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   $('#muteBtn').addEventListener('click',()=>{muted=!muted;store.set(KEY.mute,muted?'1':'0');paintMute();if(!muted)sfx('ok')});
 
   /* ---------- 화면 ---------- */
+  function fitBgY(){const st=$('#stage');if(!st||!st.clientHeight)return;st.style.backgroundPositionY=(st.clientWidth/st.clientHeight>BG_WIDE?BG_WIDE_Y:50)+'%'}
+  addEventListener('resize',fitBgY);
   function show(name){Object.values(screens).forEach(s=>s.classList.remove('active'));screens[name].classList.add('active')}
   function toast(t,hot){const e=$('#toast');e.textContent=t;e.classList.toggle('hot',!!hot);e.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove('show'),hot?1100:1300)}
   function bubble(m,text,ms){memberEls().forEach(x=>x!==m&&x.removeAttribute('data-gag'));m.dataset.gag=text;clearTimeout(bubble._t);bubble._t=setTimeout(()=>m.removeAttribute('data-gag'),ms||1500)}
@@ -597,7 +600,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function levelKicker(){return cfg.scene+' · 사진 '+currentLevel+'/'+LEVELS.length+' · '+difficulties[difficulty].label}
   function enterLevel(skipBrief){
     {const base=LEVELS[order[currentLevel-1]],kinds=animalsFor(currentLevel);cfg=Object.assign({},base,{chaos:base.chaos.filter(e=>e.kind!=='cat').concat(animalEvents(base,kinds)),rarity:Object.assign({},base.rarity,{legend:kinds.length?460:99999})})}phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
-    $('#levelBadge').textContent=(innerWidth<=380?'':cfg.scene+' ')+currentLevel+'/'+LEVELS.length;   /* 좁은 폰(≤380px)은 장면 이름을 빼서 타이머와 겹치지 않게 */$('#stage').style.backgroundImage=`url('${bgFor(cfg)}')`;
+    $('#levelBadge').textContent=(innerWidth<=380?'':cfg.scene+' ')+currentLevel+'/'+LEVELS.length;   /* 좁은 폰(≤380px)은 장면 이름을 빼서 타이머와 겹치지 않게 */$('#stage').style.backgroundImage=`url('${bgFor(cfg)}')`;fitBgY();
     setupPets();$('#bigCount').classList.remove('show');setCoach('');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
     $('#condBar').innerHTML='';layoutStart();
     $('#missionKicker').textContent=levelKicker();$('#missionTitle').textContent=cfg.title;$('#missionConds').innerHTML=cfg.conds.map((c,i)=>`<li><b>${i+1}</b>${c.label}</li>`).join('');
@@ -837,7 +840,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   async function photoCanvas(r){
     const W=1200,ratio=Number(r.stageRatio)||.5,H=Math.round(W/ratio),u=W/700,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
     try{await document.fonts.ready}catch{}
-    const bg=await loadImg(r.bg||'assets/living-room.png'),k=Math.max(W/bg.width,H/bg.height);g.drawImage(bg,(W-bg.width*k)/2,(H-bg.height*k)/2,bg.width*k,bg.height*k);
+    const bg=await loadImg(r.bg||'assets/living-room.png'),k=Math.max(W/bg.width,H/bg.height),fy=(r.stageRatio||.5)>BG_WIDE?BG_WIDE_Y/100:.5;g.drawImage(bg,(W-bg.width*k)/2,(H-bg.height*k)*fy,bg.width*k,bg.height*k);
     const items=[...r.members.map(p=>({src:poseSrc(p),box:p.box||{cx:Math.max(14,Math.min(86,Number.isFinite(Number(p.x))?Number(p.x):legacyX[p.id])),bottom:1,w:22,h:70,z:10}})),...(r.props||[]).map(p=>({src:p.src,box:p.box,flip:p.flip}))].sort((a,b)=>(a.box.z||10)-(b.box.z||10));
     for(const it of items){const im=await loadImg(it.src).catch(()=>null);if(!im)continue;const b=it.box,bw=b.w/100*W,bh=b.h/100*H,sc=Math.min(bw/im.width,bh/im.height),dw=im.width*sc,dh=im.height*sc;
       g.save();g.shadowColor='#432b2344';g.shadowBlur=4*u;g.shadowOffsetY=3*u;if(r.effect==='shake')g.filter=`blur(${1.8*u}px)`;if(it.flip){g.translate(b.cx/100*W,0);g.scale(-1,1);g.drawImage(im,-dw/2,H-b.bottom/100*H-dh,dw,dh)}else g.drawImage(im,b.cx/100*W-dw/2,H-b.bottom/100*H-dh,dw,dh);g.restore()}

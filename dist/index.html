@@ -48,9 +48,9 @@
     }
     /* ===== 게임 ===== */
     .game-screen{flex-direction:column;background:#f3e6cb}
-    .hud{height:12%;min-height:48px;background:#fff8e9;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 3%;border-bottom:4px solid #c98663;z-index:20;box-shadow:0 4px 0 #5d413a25}
+    .hud{position:relative;height:12%;min-height:48px;background:#fff8e9;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 3%;border-bottom:4px solid #c98663;z-index:20;box-shadow:0 4px 0 #5d413a25}
     .hud-left{display:flex;align-items:center;gap:4px;font-size:clamp(12px,1.9vh,21px);font-weight:900}
-    .best-label{font-size:clamp(12px,1.9vh,21px);font-weight:900;text-align:right}.best-label b{font-size:1.35em;color:#d85047}
+    .best-label{position:absolute;right:3%;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:clamp(12px,1.9vh,21px);font-weight:900;text-align:right}   /* 오른쪽 끝 고정: 왼쪽 버튼 폭이 달라져도 밀리지 않게 */.best-label b{font-size:1.35em;color:#d85047}
     .gallery-btn{border:0;background:#ffe18a;border-radius:999px;padding:5px 12px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #c29a42}
     .level-badge{display:inline-block;background:#493735;color:#fff;border-radius:999px;padding:4px 9px;margin-right:3px;font-size:.75em;white-space:nowrap}
     .timer{position:relative;width:clamp(62px,9vh,100px);aspect-ratio:1;border-radius:50%;background:#fff;border:6px solid var(--red);display:grid;place-items:center;font-size:clamp(23px,4vh,45px);font-weight:900;box-shadow:0 4px 0 #b4443e;transform:translateY(8%)}
@@ -632,7 +632,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function tickChaos(t){const rem=CHAOS_SECONDS-(t-S.chaosStart);S.rem=rem;
     const due=S.pending.filter(e=>rem<=e.at);S.pending=S.pending.filter(e=>rem>e.at);due.forEach(e=>fireEvent(e,rem));
     const dt=S.timers.filter(x=>rem<=x.when);S.timers=S.timers.filter(x=>rem>x.when);dt.forEach(x=>x.fn(rem));
-    const shown=Math.max(1,Math.ceil(rem));if(shown!==S.shown){S.shown=shown;if(shown<=3){const b=$('#bigCount');b.textContent=shown;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}$('#timer').textContent=shown;sfx('tick')}
+    const shown=Math.max(1,Math.ceil(rem));if(shown!==S.shown){S.shown=shown;if(shown<=3){const b=$('#bigCount');b.textContent=shown;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}sfx('tick')}   /* 촬영 중 숫자는 화면 가운데 큰 숫자로만 보여준다(상단 타이머는 📷 유지: 숫자가 겹쳐 깜빡이던 문제) */
     $('#shutter').style.setProperty('--heat',Math.max(0,Math.min(1,1-rem/CHAOS_SECONDS)).toFixed(2));
     pets.forEach(q=>{if(q.firedAt==null||q.scared)return;const e=q.firedAt-rem,pose=e<.5?5:e<.9?6:4;if(pose!==q.pose){q.pose=pose;q.el.src=ANIMALS[q.kind].file(pose)}
       q.el.style.left=(q.from+(q.to-q.from)*Math.max(0,Math.min(1,e/.5)))+'%'});

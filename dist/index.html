@@ -625,7 +625,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     const dt=S.timers.filter(x=>rem<=x.when);S.timers=S.timers.filter(x=>rem>x.when);dt.forEach(x=>x.fn(rem));
     const shown=Math.max(1,Math.ceil(rem));if(shown!==S.shown){S.shown=shown;if(shown<=3){const b=$('#bigCount');b.textContent=shown;b.classList.remove('show');void b.offsetWidth;b.classList.add('show')}$('#timer').textContent=shown;sfx('tick')}
     $('#shutter').style.setProperty('--heat',Math.max(0,Math.min(1,1-rem/CHAOS_SECONDS)).toFixed(2));
-    pets.forEach(q=>{if(q.firedAt==null)return;const e=q.firedAt-rem,pose=e<.5?5:e<.9?6:4;if(pose!==q.pose){q.pose=pose;q.el.src=ANIMALS[q.kind].file(pose)}
+    pets.forEach(q=>{if(q.firedAt==null||q.scared)return;const e=q.firedAt-rem,pose=e<.5?5:e<.9?6:4;if(pose!==q.pose){q.pose=pose;q.el.src=ANIMALS[q.kind].file(pose)}
       q.el.style.left=(q.from+(q.to-q.from)*Math.max(0,Math.min(1,e/.5)))+'%'});
     if(S.boar)driveBoar(rem);
     if(rem<=0){toast('시간 끝! 자동으로 찰칵',true);takePhoto()}}
@@ -643,7 +643,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     S.pending.push({id:'boar',kind:'boar',at:S.boar.impact+lead})}
   /* 달려오는 쪽에서 가장 가까운 사람(사고·잠금 중이 아닌 사람 우선)과, 그 사람 옆 충돌 자리가 화면 안에 들어오는지 */
   function boarTarget(dir){const sr=stage.getBoundingClientRect(),ms=memberEls().sort((a,c)=>dir*(parseFloat(a.style.left)-parseFloat(c.style.left))),cand=ms.filter(m=>!m.dataset.accident&&!m.dataset.locked),t=(cand.length?cand:ms)[Math.floor(Math.random()*(cand.length||ms.length))];if(!t)return null;   /* 맞는 사람은 무작위(양끝만 맞으면 모두 같은 쪽으로 쓰러진다) */
-    const c=containerBox(t,sr),bw=c.hc*boarScale()*sr.height/sr.width*1.2*.8,xc=parseFloat(t.style.left)-dir*(bw*.5+c.wc*.34);return{t,xc:Math.max(bw*.55,Math.min(100-bw*.55,xc)),ok:xc>bw*.4&&xc<100-bw*.4}}
+    const c=containerBox(t,sr),bw=c.hc*boarScale()*sr.height/sr.width*1.2*.8,xc=parseFloat(t.style.left)-dir*(bw*.42+c.wc*.24);return{t,xc:Math.max(bw*.55,Math.min(100-bw*.55,xc)),ok:xc>bw*.4&&xc<100-bw*.4}}
   function launchBoar(ev,rem){const b=S.boar;if(!b)return;const I=b.impact;
     let pick=null;for(let k=0;k<8;k++){const c=boarTarget(b.dir);if(c&&c.ok){pick=c;break}if(!pick)pick=c}
     if(pick&&!pick.ok){const alt=boarTarget(-b.dir);if(alt&&alt.ok){b.dir=-b.dir;pick=alt}}   /* 화면 가장자리에 서 있는 사람이면 반대쪽에서 달려오게 해서 멧돼지가 잘리지 않게 한다 */
@@ -662,9 +662,18 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     const fy=f.y!=null?f.y:b.y,k=Math.max(.55,Math.min(1.35,1-(fy-b.y)*.022)),h=g.h*k;   /* 멀수록(바닥 높이가 클수록) 작게, 가까울수록 크게 */
     boarEl.style.height=h+'%';boarEl.style.width=(h*g.sr.height/g.sr.width*1.2)+'%';boarEl.style.bottom=(fy-1)+'%';
     boarEl.style.zIndex=String(f.phase==='sweep'||f.phase==='run'?zOf(fy)+1:Math.max(zOf(fy),...memberEls().map(m=>Number(m.style.zIndex)||0))+1);   /* 지나갈 땐 깊이대로(뒤면 가족에 가려짐), 충돌 장면은 가족 맨 앞 */
-    if(rem>b.impact){const bw=boarEl.getBoundingClientRect().width/g.sr.width*100;b.xc=Math.max(bw*.55,Math.min(100-bw*.55,parseFloat(g.t.style.left)-b.dir*(bw*.5+g.c.wc*.34)))}
+    if(rem>b.impact){const bw=boarEl.getBoundingClientRect().width/g.sr.width*100;b.xc=Math.max(bw*.55,Math.min(100-bw*.55,parseFloat(g.t.style.left)-b.dir*(bw*.42+g.c.wc*.24)))}
     const mv=f.dir||b.dir;b.cur=mv;setBoarFlip(boarEl,mv<0);
-    boarEl.style.display='block';boarEl.style.left=f.x+'%';if(f.phase==='sweep')memberEls().forEach(m=>{const L=parseFloat(m.style.left);if(mv>0?f.x>=L-14:f.x<=L+14)startleBoar(m,mv,rem)});if(f.pose!==b.pose){b.pose=f.pose;boarEl.src=ANIMALS.boar.file(f.pose)}}
+    boarEl.style.display='block';boarEl.style.left=f.x+'%';if(f.phase==='sweep')scarePets(f,mv);boarEl.style.transition=f.phase==='hit'?'left .25s ease-out':'';if(f.phase==='sweep')memberEls().forEach(m=>{const L=parseFloat(m.style.left);if(mv>0?f.x>=L-14:f.x<=L+14)startleBoar(m,mv,rem)});if(f.pose!==b.pose){b.pose=f.pose;boarEl.src=ANIMALS.boar.file(f.pose)}}
+  /* 동물도 멧돼지에 놀란다: 지나가는 순간 폴짝(점프 포즈) 뛰며 반대쪽으로 비키고, 충돌 때는 멧돼지 몸 밖으로 비켜 선다 */
+  function scarePets(f,mv,atImpact){pets.forEach(q=>{const L=parseFloat(q.el.style.left);if(Number.isNaN(L))return;
+    if(atImpact){const r=boarEl&&boarEl.getBoundingClientRect(),sr=stage.getBoundingClientRect();if(!r||!r.width)return;
+      const bl=(r.left-sr.left)/sr.width*100,br=(r.right-sr.left)/sr.width*100;
+      if(L>bl-4&&L<br+4){const to=L<(bl+br)/2?bl-7:br+7;q.el.style.transition='left .3s ease-out';q.el.style.left=Math.max(8,Math.min(92,to))+'%'}
+      q.scared=true;q.pose=4;q.el.src=ANIMALS[q.kind].file(4);return}
+    if(q.scared||!(mv>0?f.x>=L-14:f.x<=L+14))return;
+    q.scared=true;q.pose=6;q.el.src=ANIMALS[q.kind].file(6);q.el.style.transition='left .35s ease-out';q.el.style.left=Math.max(8,Math.min(92,L+mv*9))+'%';
+    q.el.classList.remove('tapped');void q.el.offsetWidth;q.el.classList.add('tapped');setTimeout(()=>{if(q.scared&&q.pose===6){q.pose=4;q.el.src=ANIMALS[q.kind].file(4)}},550)})}
   function setBoarFlip(img,flip){if(flip){img.style.scale='-1 1';img.style.translate='-100% 0'}else{img.style.scale='';img.style.translate=''}}
   /* p7 그림은 오른쪽에서 달려오는 멧돼지(왼쪽으로 진행)에게 왼쪽으로 놀라는 모습이라, 오른쪽으로 진행할 때는 좌우반전본(p7r) */
   const boarPose=(id,mv)=>id+(mv>0?'-p7r':'-p7'),BOAR_SAY=['으악!','엄마야!','꺄악!','헉!'];
@@ -678,7 +687,9 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     if(drag&&drag.m===m)releaseDrag();
     const prev=m.dataset.accident&&m.dataset.accident!=='boar'?BASE[b.target]:m.dataset.poseId,hit=boarPose(b.target,b.dir);
     m.dataset.accident='boar';setPose(m,hit,true);flashTimer();sfx('boing');buzz([20,30,40]);bubble(m,'으악!',BOAR_HOLD*1000-200);const stay=!!b.stay;
-    shove(m,hit,[BOAR_PUSH,9,5,0].map(d=>d*b.dir));
+    const xb=parseFloat(m.style.left);shove(m,hit,[BOAR_PUSH,9,5,0].map(d=>d*b.dir));
+    b.xc=Math.max(6,Math.min(94,b.xc+(parseFloat(m.style.left)-xb)*.85));   /* 맞은 사람이 밀려난 만큼 멧돼지도 밀고 따라가서 떨어져 보이지 않게 */
+    scarePets(null,b.dir,true);
     memberEls().forEach(o=>{if(o===m||o.dataset.accident!=='boar')return;const away=parseFloat(o.style.left)>b.xc?1:-1,hp=boarPose(o.dataset.id,away);if(o.dataset.poseId!==hp){setPose(o,hp,true);shove(o,hp,[3*away,0])}});   /* 이미 놀란 가족도 멧돼지가 있는 곳의 반대쪽으로 쓰러지게 다시 맞춘다 */
     lockMember(m,rem,stay?.7:BOAR_HOLD-.1);if(!stay)restoreLater(m,prev,rem,BOAR_HOLD,'boar');S.fired.push({ev:{id:'boar',kind:'boar'},firedAt:rem})}
 

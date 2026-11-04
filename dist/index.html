@@ -332,15 +332,15 @@ const DUO_BONUS=120,CAT_BONUS=300,BOAR_BONUS=300;
    BOAR_CHANCE: 야외 판에서 나올 확률(조정은 여기서). BOAR_HOLD: 충돌 후 멧돼지·가족 포즈를 유지하는 초(셔터 기회).
    한 번의 움직임은 '충돌 시각 impact(남은 초)'만 정하면 결정된다: 달려옴(RUN-NOTICE) → 놀람(NOTICE, 멈추지 못하고 미끄러짐) → 충돌·어지러움(HOLD) → 퇴장(EXIT) */
 const BOAR_CHANCE=.3,BOAR_HOLD=1.6,BOAR_RUN=1.15,BOAR_NOTICE=.35,BOAR_EXIT=.7,BOAR_SKID=10,BOAR_PUSH=13,BOAR_SWEEP=1.3;
-function boarFrame(p,rem){const I=p.impact,T0=I+BOAR_RUN,Tn=I+BOAR_NOTICE,Te=p.stay?-Infinity:I-BOAR_HOLD,xn=p.xc-p.dir*BOAR_SKID,run=t=>Math.floor(t/.14)%2?2:1;
+function boarFrame(p,rem){const I=p.impact,T0=I+BOAR_RUN,Tn=I+BOAR_NOTICE,Te=p.stay?-Infinity:I-BOAR_HOLD,xn=p.xc-p.dir*BOAR_SKID,run=t=>Math.floor(t/.14)%2?2:1,Y=(a,b,k)=>p.yF==null?undefined:a+(b-a)*k;   /* Y: 깊이(바닥 높이 %) 보간. y0→y1 은 가족 앞뒤를 지나는 길, 그 뒤 yF(가족 맨 앞)로 다가온다 */
   const Ts=p.sweep?T0+BOAR_SWEEP:T0;   /* sweep: 반대쪽 끝에서 가족 앞을 가로질러 한 바퀴 돈 뒤 충돌하러 되돌아온다 */
   if(rem>Ts)return null;
-  if(rem>T0)return{x:p.xs+(p.x0-p.xs)*(Ts-rem)/BOAR_SWEEP,pose:run(Ts-rem),phase:'sweep',dir:-p.dir};
-  if(rem>Tn)return{x:p.x0+(xn-p.x0)*(T0-rem)/(BOAR_RUN-BOAR_NOTICE),pose:run(T0-rem),phase:'run'};
-  if(rem>I)return{x:xn+(p.xc-xn)*(Tn-rem)/BOAR_NOTICE,pose:3,phase:'notice'};
-  if(rem>Te)return{x:p.xc,pose:p.stay&&Math.floor((I-rem)/.6)%2?3:4,phase:'hit'};
+  if(rem>T0)return{x:p.xs+(p.x0-p.xs)*(Ts-rem)/BOAR_SWEEP,pose:run(Ts-rem),phase:'sweep',dir:-p.dir,y:Y(p.y0,p.y1,(Ts-rem)/BOAR_SWEEP)};
+  if(rem>Tn)return{x:p.x0+(xn-p.x0)*(T0-rem)/(BOAR_RUN-BOAR_NOTICE),pose:run(T0-rem),phase:'run',y:Y(p.y1,p.yF,(T0-rem)/(BOAR_RUN-BOAR_NOTICE))};
+  if(rem>I)return{x:xn+(p.xc-xn)*(Tn-rem)/BOAR_NOTICE,pose:3,phase:'notice',y:p.yF};
+  if(rem>Te)return{x:p.xc,pose:p.stay&&Math.floor((I-rem)/.6)%2?3:4,phase:'hit',y:p.yF};
   const k=(Te-rem)/BOAR_EXIT;if(k>=1)return null;
-  return{x:p.xc+(p.xOut-p.xc)*k,pose:run(Te-rem),phase:'exit'}}
+  return{x:p.xc+(p.xOut-p.xc)*k,pose:run(Te-rem),phase:'exit',y:p.yF}}
 const RARITY={normal:{label:'평범한 한 장',icon:'📷'},funny:{label:'제법 웃김',icon:'😆'},disaster:{label:'대참사',icon:'💥'},legend:{label:'전설의 가족사진',icon:'👑'}};
 const CAT_POS={x:50,y:22};   /* 고양이가 앉는 곳(stage % : 가로 중심, 세로 중심) */
 
@@ -648,6 +648,8 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     let pick=null;for(let k=0;k<8;k++){const c=boarTarget(b.dir);if(c&&c.ok){pick=c;break}if(!pick)pick=c}
     if(pick&&!pick.ok){const alt=boarTarget(-b.dir);if(alt&&alt.ok){b.dir=-b.dir;pick=alt}}   /* 화면 가장자리에 서 있는 사람이면 반대쪽에서 달려오게 해서 멧돼지가 잘리지 않게 한다 */
     if(!pick)return;const dir=b.dir,t=pick.t;b.target=t.dataset.id;b.y=t._base;
+    const bases=memberEls().map(x=>x._base),front=Math.min(...bases),back=Math.max(...bases),lo=Math.max(0,front-3-Math.random()*3),hi=back+9+Math.random()*7,fwd=Math.random()<.5;   /* 지나가는 길: 가족 뒤(작게)와 앞(크게)을 오간다. 방향은 무작위 */
+    b.y0=fwd?hi:lo;b.y1=fwd?lo:hi;b.yF=Math.max(0,front-2);
     S.pending=S.pending.filter(e=>e.kind==='cat'||e.kind==='boar');   /* 멧돼지가 시작된 뒤에는 다른 사고를 멈춘다(모두 놀라 있는 상태로 사진이 찍히게) */
     const img=document.createElement('img');img.className='photo-pet boar';img.alt=ANIMALS.boar.alt;img.src=ANIMALS.boar.file(1);img.style.pointerEvents='none';img.style.display='block';
     pet.parentNode.appendChild(img);boarEl=img;b.pose=1;b.xs=dir>0?135:-35;b.x0=dir>0?-35:135;b.xOut=dir>0?135:-35;b.xc=pick.xc;b.started=true;store.set(KEY.boar,'1');
@@ -656,9 +658,11 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   const boarScale=()=>{const r=stage.getBoundingClientRect();return r.width/r.height<.7?.56:.62};
   function boarGeom(){const b=S.boar,t=el(b.target),sr=stage.getBoundingClientRect(),c=containerBox(t,sr);return{t,sr,c,h:c.hc*boarScale()}}
   function driveBoar(rem){const b=S.boar;if(!b||!b.started||!boarEl)return;const g=boarGeom();
-    boarEl.style.height=g.h+'%';boarEl.style.width=(g.h*g.sr.height/g.sr.width*1.2)+'%';boarEl.style.bottom=(b.y-2)+'%';boarEl.style.zIndex=String(Math.max(zOf(b.y),...memberEls().map(m=>Number(m.style.zIndex)||0))+1);   /* 앞에 선 가족에게 가려지지 않게 모든 가족보다 앞 */
-    if(rem>b.impact){const bw=boarEl.getBoundingClientRect().width/g.sr.width*100;b.xc=Math.max(bw*.55,Math.min(100-bw*.55,parseFloat(g.t.style.left)-b.dir*(bw*.5+g.c.wc*.34)))}
     const f=boarFrame(b,rem);if(!f){boarEl.style.display='none';return}
+    const fy=f.y!=null?f.y:b.y,k=Math.max(.55,Math.min(1.35,1-(fy-b.y)*.022)),h=g.h*k;   /* 멀수록(바닥 높이가 클수록) 작게, 가까울수록 크게 */
+    boarEl.style.height=h+'%';boarEl.style.width=(h*g.sr.height/g.sr.width*1.2)+'%';boarEl.style.bottom=(fy-1)+'%';
+    boarEl.style.zIndex=String(f.phase==='sweep'||f.phase==='run'?zOf(fy)+1:Math.max(zOf(fy),...memberEls().map(m=>Number(m.style.zIndex)||0))+1);   /* 지나갈 땐 깊이대로(뒤면 가족에 가려짐), 충돌 장면은 가족 맨 앞 */
+    if(rem>b.impact){const bw=boarEl.getBoundingClientRect().width/g.sr.width*100;b.xc=Math.max(bw*.55,Math.min(100-bw*.55,parseFloat(g.t.style.left)-b.dir*(bw*.5+g.c.wc*.34)))}
     const mv=f.dir||b.dir;b.cur=mv;setBoarFlip(boarEl,mv<0);
     boarEl.style.display='block';boarEl.style.left=f.x+'%';if(f.phase==='sweep')memberEls().forEach(m=>{const L=parseFloat(m.style.left);if(mv>0?f.x>=L-14:f.x<=L+14)startleBoar(m,mv,rem)});if(f.pose!==b.pose){b.pose=f.pose;boarEl.src=ANIMALS.boar.file(f.pose)}}
   function setBoarFlip(img,flip){if(flip){img.style.scale='-1 1';img.style.translate='-100% 0'}else{img.style.scale='';img.style.translate=''}}

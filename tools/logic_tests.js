@@ -263,5 +263,10 @@ t('복귀: 사고 포즈는 hold 초 안에만 보이고 그 뒤 시작 포즈�
  t('sweep 직후 충돌 쪽 가장자리에서 달려옴', F(T0 - .01).phase === 'run' && F(T0 - .01).dir === undefined);
  t('sweep 없는 계획은 기존과 같음', L.boarFrame({...P, sweep: false}, T0 + .01) === null);
  t('stay: 어지러움 표정이 번갈아(4·3) 바뀜', new Set([0, .7].map(d => F(3 - d - .01).pose)).size === 2);}
+// boarFrame: 깊이(y) — 가족 뒤(큰 y)에서 앞(작은 y)으로 지나가고 충돌 자리는 맨 앞
+{const P={impact:3,dir:1,x0:-35,xs:135,xc:50,xOut:135,sweep:true,stay:true,y0:26,y1:4,yF:6},F=r=>L.boarFrame(P,r),T0=3+L.BOAR_RUN;
+ t('깊이: sweep 시작은 뒤(y0), 끝은 앞(y1)', Math.abs(F(T0 + L.BOAR_SWEEP - .001).y - 26) < .1 && Math.abs(F(T0 + .001).y - 4) < .1);
+ t('깊이: 충돌 자리는 맨 앞(yF)', F(2.9).y === 6 && F(3 + L.BOAR_NOTICE - .01).y === 6);
+ t('깊이: y 정보가 없는 계획은 y 없음(하위호환)', L.boarFrame({impact:3,dir:1,x0:-35,xc:50,xOut:135}, 3.5).y === undefined);}
 console.log(`\n단위 테스트: ${pass} 통과 / ${fail} 실패`);
 process.exit(fail ? 1 : 0);

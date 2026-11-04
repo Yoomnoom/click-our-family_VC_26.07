@@ -518,9 +518,11 @@ if(typeof module!=='undefined')module.exports={freeSpot,footBlocked,BLOCKS,NAMES
   /* 쉬는 자리(가로 %)와 달려가 멈추는 자리. 둘이 함께 있을 때는 서로 겹치지 않게 벌린다 */
   const petSpot=(kind,n)=>n>1?(kind==='cat'?{rest:88,to:62}:{rest:12,to:38}):(kind==='cat'?{rest:88,to:CAT_POS.x}:{rest:12,to:CAT_POS.x});
   let pets=[];
+  /* 동물은 그 배경에서 가족이 서는 바닥 높이(시작 자리의 평균 bottom %)에 맞춘다. 배경마다 달라서 고정값이면 떠 보인다 */
+  const petGround=()=>{const s=(cfg.start&&cfg.start[0])||[];return s.length?Math.max(0,Math.round(s.reduce((a,m)=>a+m[2],0)/s.length*10)/10-1):CAT_POS.y-8};
   function setupPets(){pets.forEach(p=>p.el.remove());pets=[];if(boarEl)boarEl.remove();boarEl=null;const kinds=animalsFor(currentLevel);
     kinds.forEach(k=>{const sp=petSpot(k,kinds.length),img=document.createElement('img');const rp=REST_POSES[Math.floor(Math.random()*REST_POSES.length)];img.className='photo-pet';img.src=ANIMALS[k].file(rp);img.alt=ANIMALS[k].alt;if(ANIMALS[k].flip){img.style.scale='-1 1';img.style.translate='-100% 0'}   /* scale 은 transform:translateX(-50%) 바깥에서 적용돼 그림 폭만큼 밀리므로 되돌린다 */
-      img.classList.add('draggable');img.style.pointerEvents='auto';img.style.display='block';img.style.left=sp.rest+'%';img.style.bottom=(CAT_POS.y-8)+'%';pet.parentNode.appendChild(img);pets.push({kind:k,el:img,from:sp.rest,to:sp.to,firedAt:null,pose:rp})})}
+      img.classList.add('draggable');img.style.pointerEvents='auto';img.style.display='block';img.style.left=sp.rest+'%';img.style.bottom=petGround()+'%';pet.parentNode.appendChild(img);pets.push({kind:k,el:img,from:sp.rest,to:sp.to,firedAt:null,pose:rp})})}
   /* 이 사진에 나올 동물의 사고(고양이 사고 데이터를 그대로 쓴다). 다른 사고와 0.5초 안에 겹치지 않는 시각을 고른다 */
   function animalEvents(base,kinds){const taken=base.chaos.filter(e=>e.kind!=='cat').map(e=>e.at).concat(base.extra?[base.extra.at]:[]),out=[];
     kinds.forEach(k=>{const at=[.8,1.35,1.65,1.9,2.5,.5].find(c=>taken.concat(out.map(o=>o.at)).every(t=>Math.abs(t-c)>=.2))||.8;

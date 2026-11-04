@@ -223,7 +223,7 @@ t('복귀: 사고 포즈는 hold 초 안에만 보이고 그 뒤 시작 포즈�
 {
   const out = L.LEVELS.filter(l => l.outdoor).map(l => l.id).sort().join();
   t('멧돼지는 야외 3개 배경(캠핑장·벚꽃 공원·해변)에만', out === 'beach5,living3,park4', out);
-  t('등장 확률 기본 30%', L.BOAR_CHANCE === .3);
+  t('등장 확률 기본 50%', L.BOAR_CHANCE === .5);
   const p = { impact: 4, dir: 1, x0: -35, xc: 50, xOut: 135 }, F = r => L.boarFrame(p, r);
   t('등장 이전에는 화면에 없음', F(4 + L.BOAR_RUN + .01) === null);
   t('달리기 → 놀람 → 어지러움 → 퇴장 순서', F(4 + L.BOAR_RUN - .01).phase === 'run' && F(4 + L.BOAR_NOTICE - .05).phase === 'notice' && F(3.9).phase === 'hit' && F(4 - L.BOAR_HOLD - .1).phase === 'exit');

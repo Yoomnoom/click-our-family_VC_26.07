@@ -518,7 +518,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
      몇 번째 사진인지로 정한다(배경 순서가 섞여도 동일): 1번 없음, 2~3번 고양이, 4~5번 강아지, 6번 둘 다 */
   const ANIMALS={cat:{file:n=>`assets/poses/photo-cat${n}.png`,flip:true,alt:'사진 속 고양이',say:'으악 고양이!',bubble:'고양이가 온다!'},dog:{file:n=>`assets/poses/photo-dog${n}.png`,flip:false,alt:'사진 속 강아지',say:'으악 강아지!',bubble:'강아지가 달려와요!'}};
   ANIMALS.boar={file:n=>`assets/poses/photo-boar${n}.png`,flip:false,alt:'사진에 끼어든 멧돼지'};   /* 멧돼지 포즈: 1·2 달리기(화난 얼굴) · 3 놀람 · 4 어지러움. 모두 오른쪽을 본다 → 왼쪽으로 달릴 때만 뒤집는다 */
-  let boarChance=BOAR_CHANCE,boarEl=null;
+  let boarChance=BOAR_CHANCE,boarEl=null,boarRetry=false;
   {const q=new URLSearchParams(location.search).get('boar');if(q!==null&&q!==''&&!isNaN(Number(q)))boarChance=Math.max(0,Math.min(1,Number(q)))}   /* 확인용: 주소 끝에 ?boar=1 을 붙이면 야외 배경에서 항상 나온다(0~1) */
   /* 포즈 번호: 1 앉아 올려다봄 · 2 엎드려 졸기 · 3 앉아 정면 · 4 두 발로 서기 · 5 달리기 · 6 점프 (5·6은 오른쪽을 봄 → 고양이는 뒤집어 그린다) */
   const REST_POSES=[3,1,3,2];
@@ -644,7 +644,8 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   /* 야외 3장 중 적어도 한 장에는 반드시 나온다: 아직 못 봤는데 남은 야외 사진이 없으면(= 이번이 마지막 야외) 확률과 상관없이 등장 */
   function planBoar(){if(!cfg.outdoor)return;
     const seen=store.get(KEY.boar,'0')==='1',later=order.slice(currentLevel).some(i=>LEVELS[i].outdoor),forced=!seen&&!later&&boarChance>0;
-    if(!forced&&Math.random()>=boarChance)return;
+    const again=boarRetry&&boarChance>0;boarRetry=false;
+    if(!forced&&!again&&Math.random()>=boarChance)return;
     const cat=S.pending.find(e=>e.kind==='cat'),pickI=()=>.9+Math.random()*(forced?.9:1.3),sw=Math.random()<.5,lead=BOAR_RUN+(sw?BOAR_SWEEP:0),clash=I=>cat&&cat.at<I+lead+CAT_HOLD+.3;let I=pickI();
     for(let k=0;k<30&&clash(I);k++)I=pickI();   /* 동물 사고는 멧돼지가 시작되기 전에 끝나야 한다 */
     if(clash(I))S.pending=S.pending.filter(e=>e!==cat);   /* 끝낼 수 없으면 이번 사진은 멧돼지만 */
@@ -867,7 +868,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function openGallery(){galleryReturn=screens.result.classList.contains('active')?'result':screens.game.classList.contains('active')?'game':screens.complete.classList.contains('active')?'complete':'title';if(galleryReturn==='game')abortRound();renderGallery();show('gallery')}
   function closeGallery(){if(galleryReturn==='result')show('result');else if(galleryReturn==='game')enterLevel();else show(galleryReturn)}
   function advance(){resultTimers.forEach(clearTimeout);if(currentLevel>=LEVELS.length){store.set(KEY.level,'1');currentLevel=1;show('complete');return}currentLevel++;store.set(KEY.level,String(currentLevel));enterLevel()}
-  function retry(){resultTimers.forEach(clearTimeout);enterLevel(true)}
+  function retry(){resultTimers.forEach(clearTimeout);boarRetry=!!(S.boar&&S.boar.started);enterLevel(true)}   /* 멧돼지가 나온 판을 다시 찍으면 멧돼지도 다시 나온다 */
   function setDifficulty(v){if(!difficulties[v])v='normal';difficulty=v;store.set(KEY.diff,v);$$('.difficulty button').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===v));$('#startBtn').textContent=difficulties[v].button}
   $$('.difficulty button').forEach(b=>b.addEventListener('click',()=>setDifficulty(b.dataset.difficulty)));setDifficulty(difficulty);
   $('#startBtn').addEventListener('click',async()=>{sfx('go');if(currentLevel===1)order=newOrder();await preloadDone;enterLevel()});$('#missionStart').addEventListener('click',beginStaging);$('#nextBtn').addEventListener('click',advance);$('#retryBtn').addEventListener('click',retry);

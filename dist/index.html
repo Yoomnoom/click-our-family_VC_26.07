@@ -667,14 +667,14 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   /* 한 바퀴 도는 멧돼지가 지나가는 순간 그 자리의 가족이 놀란다(끝까지 유지) */
   function startleBoar(m,mv,rem){if(m.dataset.accident==='boar')return;if(drag&&drag.m===m)releaseDrag();
     const hit=boarPose(m.dataset.id,mv);m.dataset.accident='boar';setPose(m,hit,true);sfx('boing');buzz(12);
-    bubble(m,BOAR_SAY[Math.floor(Math.random()*BOAR_SAY.length)],900);shove(m,hit,[5*mv,3*mv,0]);lockMember(m,rem,rem+1)}
+    bubble(m,BOAR_SAY[Math.floor(Math.random()*BOAR_SAY.length)],900);shove(m,hit,[5*mv,3*mv,0]);lockMember(m,rem,.5)}   /* 놀란 직후 잠깐만 잠그고, 시간이 남으면 톡 쳐서 자세를 바로잡을 수 있다 */
   function impactBoar(rem){const b=S.boar,m=el(b.target);if(!b||!m)return;
     if(drag&&drag.m===m)releaseDrag();
     const prev=m.dataset.accident&&m.dataset.accident!=='boar'?BASE[b.target]:m.dataset.poseId,hit=boarPose(b.target,b.dir);
     m.dataset.accident='boar';setPose(m,hit,true);flashTimer();sfx('boing');buzz([20,30,40]);bubble(m,'으악!',BOAR_HOLD*1000-200);const stay=!!b.stay;
     shove(m,hit,[BOAR_PUSH,9,5,0].map(d=>d*b.dir));
     memberEls().forEach(o=>{if(o===m||o.dataset.accident!=='boar')return;const away=parseFloat(o.style.left)>b.xc?1:-1,hp=boarPose(o.dataset.id,away);if(o.dataset.poseId!==hp){setPose(o,hp,true);shove(o,hp,[3*away,0])}});   /* 이미 놀란 가족도 멧돼지가 있는 곳의 반대쪽으로 쓰러지게 다시 맞춘다 */
-    lockMember(m,rem,stay?rem+1:BOAR_HOLD-.1);if(!stay)restoreLater(m,prev,rem,BOAR_HOLD,'boar');S.fired.push({ev:{id:'boar',kind:'boar'},firedAt:rem})}
+    lockMember(m,rem,stay?.7:BOAR_HOLD-.1);if(!stay)restoreLater(m,prev,rem,BOAR_HOLD,'boar');S.fired.push({ev:{id:'boar',kind:'boar'},firedAt:rem})}
 
   /* ---------- 사고 실행 ---------- */
   let flashT=0;
@@ -745,7 +745,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     const isTap=!d.moved&&e&&e.type==='pointerup'&&performance.now()-d.t<TAP_MS;
     if(d.moved)S.touched=true;
     /* 탭: base → wave → special → base. 사고 중인 인물은 무시 */
-    if(isTap&&!m.dataset.accident&&m.dataset.role!=='chaos'&&(phase==='staging'||phase==='ready'||phase==='chaos')){S.touched=true;setCoach('');cyclePose(m);
+    if(isTap&&(!m.dataset.accident||m.dataset.accident==='boar')&&m.dataset.role!=='chaos'&&(phase==='staging'||phase==='ready'||phase==='chaos')){delete m.dataset.accident;S.touched=true;setCoach('');cyclePose(m);
       if(phase==='ready'){phase='staging';S.metSince=0}}}
 
   /* ---------- 촬영 ---------- */

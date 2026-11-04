@@ -662,16 +662,17 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     b.y0=fwd?hi:lo;b.y1=b.sweep||fwd?(fwd?lo:hi):(Math.random()<.5?hi:lo);   /* 한 바퀴 안 도는 판은 뒤(작게→크게)나 앞에서 곧장 달려든다 */b.yF=Math.max(0,front-2);
     S.pending=S.pending.filter(e=>e.kind==='cat'||e.kind==='boar');   /* 멧돼지가 시작된 뒤에는 다른 사고를 멈춘다(모두 놀라 있는 상태로 사진이 찍히게) */
     const img=document.createElement('img');img.className='photo-pet boar';img.alt=ANIMALS.boar.alt;img.src=ANIMALS.boar.file(1);img.style.pointerEvents='none';img.style.display='block';
-    pet.parentNode.appendChild(img);boarEl=img;b.pose=1;b.xs=dir>0?135:-35;b.x0=dir>0?-35:135;b.xOut=dir>0?135:-35;b.xc=pick.xc;b.started=true;store.set(KEY.boar,'1');
+    pet.parentNode.appendChild(img);boarEl=img;pets.forEach(q=>{q.behind=Math.random()<.5});b.pose=1;b.xs=dir>0?135:-35;b.x0=dir>0?-35:135;b.xOut=dir>0?135:-35;b.xc=pick.xc;b.started=true;store.set(KEY.boar,'1');
     toast('멧돼지가 달려와요!',true);sfx('boing');buzz(15);schedule(I,r=>impactBoar(r))}
   /* 세로(모바일) 화면은 가족이 좁은 폭에 몰려 있어 멧돼지가 크면 몸을 많이 가린다 → 작게 */
   const boarScale=()=>{const r=stage.getBoundingClientRect();return r.width/r.height<.7?.56:.62};
   function boarGeom(){const b=S.boar,t=el(b.target),sr=stage.getBoundingClientRect(),c=containerBox(t,sr);return{t,sr,c,h:c.hc*boarScale()}}
   function driveBoar(rem){const b=S.boar;if(!b||!b.started||!boarEl)return;const g=boarGeom();
-    const f=boarFrame(b,rem);if(!f){boarEl.style.display='none';return}
+    const f=boarFrame(b,rem);if(!f){boarEl.style.display='none';pets.forEach(petDepth);return}
     const fy=f.y!=null?f.y:b.y,k=Math.max(.55,Math.min(1.35,1-(fy-b.y)*.022)),h=g.h*k;   /* 멀수록(바닥 높이가 클수록) 작게, 가까울수록 크게 */
     boarEl.style.height=h+'%';boarEl.style.width=(h*g.sr.height/g.sr.width*1.2)+'%';boarEl.style.bottom=(fy-1)+'%';
     boarEl.style.zIndex=String(f.phase==='sweep'||f.phase==='run'?zOf(fy)+1:Math.max(zOf(fy),...memberEls().map(m=>Number(m.style.zIndex)||0))+1);   /* 지나갈 땐 깊이대로(뒤면 가족에 가려짐), 충돌 장면은 가족 맨 앞 */
+    pets.forEach(q=>{q.el.style.zIndex=String(Number(boarEl.style.zIndex)+(q.behind?-1:1))});   /* 동물이 멧돼지 앞/뒤 중 어디에 설지는 판마다 무작위 */
     if(rem>b.impact){const bw=boarEl.getBoundingClientRect().width/g.sr.width*100;b.xc=Math.max(bw*.55,Math.min(100-bw*.55,parseFloat(g.t.style.left)-b.dir*(bw*.42+g.c.wc*.24)))}
     const mv=f.dir||b.dir;b.cur=mv;setBoarFlip(boarEl,mv<0);
     boarEl.style.display='block';boarEl.style.left=f.x+'%';if(f.phase==='sweep')scarePets(f,mv);boarEl.style.transition=f.phase==='hit'?'left .25s ease-out':'';if(f.phase==='sweep')memberEls().forEach(m=>{const L=parseFloat(m.style.left);if(mv>0?f.x>=L-14:f.x<=L+14)startleBoar(m,mv,rem)});if(f.pose!==b.pose){b.pose=f.pose;boarEl.src=ANIMALS.boar.file(f.pose)}}

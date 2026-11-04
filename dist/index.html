@@ -143,7 +143,7 @@
     .complete-card{width:min(520px,92%);background:#fff7df;border:8px solid #f8d28a;box-shadow:0 0 0 4px #963d36,0 18px 0 #8f3f39;border-radius:20px;padding:8% 6%;text-align:center}.complete-emoji{font-size:clamp(48px,9vh,90px)}.complete-card h2{font-family:'Gaegu';font-size:clamp(40px,7vh,72px);margin:.1em 0;color:#d84d44;line-height:1}.complete-card p{font-weight:800;margin:6px 0 20px;color:#76584e;word-break:keep-all}.complete-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
     /* 세로 화면(폰·태블릿): 가족 크기를 동일하게 고정 → 조건 판정과 시뮬레이션 기준(SIZE)이 일치 */
     @media(max-aspect-ratio:1.25/1){.game-shell{width:100vw;height:100vh}.album{width:86%}.gallery-grid{grid-template-columns:repeat(2,1fr)}
-      .family-member{height:58%;bottom:2%}.shutter{width:72px;right:3%;bottom:3%}
+      .family-member{height:46%;bottom:2%}.shutter{width:72px;right:3%;bottom:3%}   /* 세로 화면은 폭이 좁아 58%면 한 명이 화면 폭의 88% → 46% */
       .photo{--ph:50vh}}
     @media(max-width:700px) and (orientation:portrait){
       .game-shell{min-height:0}.title-screen{padding:5vh 5vw}.album{width:90%;height:76%;max-height:680px;border-radius:13px 30px 30px 13px;transform:rotate(-1deg)}.album:before{left:18px;width:8px}.cover-card{width:76%;height:76%;padding:8% 4%;border-width:7px}.camera-mark{font-size:34px}h1{font-size:48px;line-height:.84;letter-spacing:-.08em;margin:2px 0 8px}.subtitle{font-size:14px;line-height:1.3;margin:0 0 10px}.start-btn{font-size:18px;padding:.7em 1.35em}.how{left:8%;right:8%;text-align:center;font-size:11px}
@@ -653,7 +653,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     pet.parentNode.appendChild(img);boarEl=img;b.pose=1;b.xs=dir>0?135:-35;b.x0=dir>0?-35:135;b.xOut=dir>0?135:-35;b.xc=pick.xc;b.started=true;store.set(KEY.boar,'1');
     toast('멧돼지가 달려와요!',true);sfx('boing');buzz(15);schedule(I,r=>impactBoar(r))}
   /* 세로(모바일) 화면은 가족이 좁은 폭에 몰려 있어 멧돼지가 크면 몸을 많이 가린다 → 작게 */
-  const boarScale=()=>{const r=stage.getBoundingClientRect();return r.width/r.height<.7?.48:.62};
+  const boarScale=()=>{const r=stage.getBoundingClientRect();return r.width/r.height<.7?.56:.62};
   function boarGeom(){const b=S.boar,t=el(b.target),sr=stage.getBoundingClientRect(),c=containerBox(t,sr);return{t,sr,c,h:c.hc*boarScale()}}
   function driveBoar(rem){const b=S.boar;if(!b||!b.started||!boarEl)return;const g=boarGeom();
     boarEl.style.height=g.h+'%';boarEl.style.width=(g.h*g.sr.height/g.sr.width*1.2)+'%';boarEl.style.bottom=(b.y-2)+'%';boarEl.style.zIndex=String(Math.max(zOf(b.y),...memberEls().map(m=>Number(m.style.zIndex)||0))+1);   /* 앞에 선 가족에게 가려지지 않게 모든 가족보다 앞 */

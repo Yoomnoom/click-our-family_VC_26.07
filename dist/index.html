@@ -164,7 +164,7 @@
 <main id="app"><section class="game-shell">
   <section id="title" class="screen title-screen active">
     <div class="hero"><picture><source media="(max-aspect-ratio:1.25/1)" srcset="assets/main/home-portrait.jpg"><img src="assets/main/home-landscape.jpg" alt="찰칵! 우리 가족 — 벚꽃 공원에서 포즈를 취한 가족"></picture>
-      <i class="title-cover" aria-hidden="true"></i><div class="difficulty" aria-label="난이도 선택"><button data-difficulty="easy">편안하게<small>사고 늦게</small></button><button class="selected" data-difficulty="normal">보통<small>추천</small></button><button data-difficulty="chaos">대환장<small>사고 폭발</small></button></div>
+      <i class="title-cover" aria-hidden="true"></i><div class="difficulty" aria-label="난이도 선택"><button data-difficulty="easy">편안하게<small>사고 늦게</small></button><button data-difficulty="normal">보통<small>사고 적당히</small></button><button class="selected" data-difficulty="chaos">대환장<small>사고 폭발</small></button></div>
       <button id="startBtn" class="start-btn">가족사진 찍기</button><button id="titleAlbum" class="open-gallery">가족 앨범</button><button id="titleRestart">처음부터</button></div>
   </section>
   <section id="game" class="screen game-screen">
@@ -511,7 +511,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   const KEY={level:'familyPhotoV2Level',best:'familyPhotoV2Best',diff:'familyPhotoDifficulty',gallery:'familyPhotoGallery',order:'familyPhotoV2Order',mute:'familyPhotoMuted',boar:'familyPhotoBoarSeen'};
   const TAP_PX=6,TAP_MS=250,DRAG_IN_CHAOS=true;
   const store={get:(k,d)=>{try{return localStorage.getItem(k)??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
-  let currentLevel=Math.max(1,Math.min(LEVELS.length,Number(store.get(KEY.level,1))||1)),difficulty=store.get(KEY.diff,'normal'),best=Number(store.get(KEY.best,0))||0;
+  let currentLevel=Math.max(1,Math.min(LEVELS.length,Number(store.get(KEY.level,1))||1)),difficulty=store.get(KEY.diff,'chaos'),best=Number(store.get(KEY.best,0))||0;
   /* 배경 순서: 한 판(6장)마다 6개를 한 번씩 무작위로 섞는다. 새로고침해도 같은 순서를 이어가려고 저장해 둔다 */
   const loadOrder=()=>{try{const o=JSON.parse(store.get(KEY.order,'null'));return Array.isArray(o)&&o.length===LEVELS.length&&[...o].sort((a,b)=>a-b).every((v,i)=>v===i)?o:null}catch{return null}};
   const newOrder=()=>{const o=LEVELS.map((_,i)=>i);for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}store.set(KEY.order,JSON.stringify(o));store.set(KEY.boar,'0');return o};   /* 새 한 판(6장)이면 멧돼지를 본 기록도 처음부터 */
@@ -876,7 +876,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function closeGallery(){if(galleryReturn==='result')show('result');else if(galleryReturn==='game')enterLevel();else show(galleryReturn)}
   function advance(){resultTimers.forEach(clearTimeout);if(currentLevel>=LEVELS.length){store.set(KEY.level,'1');currentLevel=1;show('complete');return}currentLevel++;store.set(KEY.level,String(currentLevel));enterLevel()}
   function retry(){resultTimers.forEach(clearTimeout);boarRetry=!!(S.boar&&S.boar.started);enterLevel(true)}   /* 멧돼지가 나온 판을 다시 찍으면 멧돼지도 다시 나온다 */
-  function setDifficulty(v){if(!difficulties[v])v='normal';difficulty=v;store.set(KEY.diff,v);$$('.difficulty button').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===v));$('#startBtn').textContent=difficulties[v].button}
+  function setDifficulty(v){if(!difficulties[v])v='chaos';difficulty=v;store.set(KEY.diff,v);$$('.difficulty button').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===v));$('#startBtn').textContent=difficulties[v].button}
   $$('.difficulty button').forEach(b=>b.addEventListener('click',()=>setDifficulty(b.dataset.difficulty)));setDifficulty(difficulty);
   $('#startBtn').addEventListener('click',async()=>{sfx('go');if(currentLevel===1)order=newOrder();await preloadDone;enterLevel()});$('#missionStart').addEventListener('click',beginStaging);$('#nextBtn').addEventListener('click',advance);
   $('#titleRestart').addEventListener('click',async()=>{sfx('go');currentLevel=1;store.set(KEY.level,'1');order=newOrder();await preloadDone;enterLevel()});   /* 타이틀의 '처음부터': 1단계로 돌아가 새로 시작 */

@@ -37,11 +37,9 @@
     .hero .difficulty button[data-difficulty=easy]{left:62.6%}.hero .difficulty button[data-difficulty=normal]{left:72.5%;width:7.8%}.hero .difficulty button[data-difficulty=chaos]{left:81.2%}
     .hero .difficulty button.selected{background:#493735;color:#fff;border-color:#493735;box-shadow:0 .1cqw 0 #2d2221}.hero .difficulty button.selected small{color:#e9ddd4}
     .hero .start-btn{left:64.9%;top:67.7%;width:22.8%;height:8.6%;border-radius:999px;font-size:2.1cqw;padding:0;box-shadow:0 .45cqw 0 #a93d37}.hero .start-btn:active{transform:translateY(.3cqw);box-shadow:0 .12cqw 0 #a93d37}
-    .hero .title-cover{position:absolute;left:62%;top:66.6%;width:26.6%;height:18%;background:#fef7e4;border-radius:1.5cqw;pointer-events:none}
     .hero #titleAlbum,.hero #titleRestart{left:64.9%;top:78.1%;width:11.2%;height:5.3%;border:.18cqw solid #c9a24f;border-radius:999px;background:#fff8e6;font-size:1.4cqw}.hero #titleRestart{left:76.5%}
     @media(max-aspect-ratio:1.25/1){
       .hero{width:min(100%,56.25vh);aspect-ratio:9/16}
-      .hero .title-cover{left:12%;top:76.2%;width:76%;height:21%;background:#fff8de;border-radius:3cqw}
       .hero .difficulty button{top:77.3%;height:6.9%;width:22.6%;font-size:3.5cqw;border-radius:2.6cqw}
       .hero .difficulty button small{font-size:2.3cqw;margin-top:.5cqw}
       .hero .difficulty button[data-difficulty=easy]{left:13.8%}.hero .difficulty button[data-difficulty=normal]{left:38.8%;width:22.6%}.hero .difficulty button[data-difficulty=chaos]{left:63.4%}
@@ -71,7 +69,7 @@
     .pose-pop{position:absolute;inset:0;transform-origin:50% 100%}.pose-pop.popping{animation:pose-pop .12s ease-out}@keyframes pose-pop{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
     .char-img{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 4px 2px #4a332c3d);pointer-events:none}.family-member.dragging .char-img{filter:drop-shadow(0 13px 6px #49362855)}
     .hit{position:absolute;pointer-events:auto;touch-action:none;cursor:grab}.family-member.dragging .hit{cursor:grabbing}.family-member.locked-member .hit{cursor:not-allowed}
-    .family-member:after{content:attr(data-gag);position:absolute;left:50%;top:calc(var(--bt,8)*1%);transform:translate(-50%,-100%);white-space:nowrap;background:#fff7dc;border:3px solid #4e3933;border-radius:18px;padding:3px 9px;font-weight:900;font-size:clamp(9px,1.5vh,15px);opacity:0;transition:.15s;z-index:5;pointer-events:none}.family-member[data-gag]:after{opacity:1}
+    .family-member:after{content:attr(data-gag);position:absolute;left:50%;top:calc(100% - (100% - var(--bt,8)*1%)*var(--depth-scale,1));transform:translate(-50%,-100%);white-space:nowrap;background:#fff7dc;border:3px solid #4e3933;border-radius:18px;padding:3px 9px;font-weight:900;font-size:clamp(9px,1.5vh,15px);opacity:0;transition:.15s;z-index:5;pointer-events:none}.family-member[data-gag]:after{opacity:1}
     .cond-bar{position:absolute;left:3%;right:3%;top:2%;display:flex;gap:6px;z-index:15;pointer-events:none}
     .cond{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:#fff9e9ee;border:3px solid #8f5544;border-radius:14px;padding:5px 8px;box-shadow:0 4px 0 #7b4a3c55;font-weight:900;font-size:clamp(10px,1.7vh,17px);word-break:keep-all;line-height:1.2}
     .cond i{flex:none;width:1.6em;height:1.6em;border-radius:50%;border:3px solid #b98c7a;display:grid;place-items:center;font-style:normal;color:transparent;font-size:.9em}
@@ -79,12 +77,12 @@
     @keyframes cond-pop{0%{transform:scale(1)}35%{transform:scale(1.12) rotate(-1.5deg)}70%{transform:scale(.97)}100%{transform:scale(1)}}
     .big-count{position:absolute;left:50%;top:17%;transform:translateX(-50%);z-index:16;pointer-events:none;font-family:'Gaegu',cursive;font-weight:900;font-size:clamp(90px,17vh,170px);line-height:1;color:#fff;-webkit-text-stroke:6px #d84d44;paint-order:stroke fill;text-shadow:0 8px 0 #7b2d27aa;opacity:0}
     .big-count.show{opacity:.82;animation:count-pop .5s ease-out}@keyframes count-pop{0%{transform:translateX(-50%) scale(1.6);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:.82}}
-    .coach{position:absolute;left:42%;bottom:3%;transform:translateX(-50%);z-index:14;pointer-events:none;background:#392e2de0;color:#fff;border-radius:999px;padding:8px 16px;font-weight:900;font-size:clamp(11px,1.8vh,18px);white-space:nowrap;display:none;word-break:keep-all}.coach.show{display:block;animation:coach-bob 1.1s ease-in-out infinite alternate}@keyframes coach-bob{to{transform:translateX(-50%) translateY(-6px)}}
+    .coach{position:absolute;left:50%;top:11%;transform:translateX(-50%);z-index:42;pointer-events:none;background:#ffd84a;color:#3a2a10;border:3px solid #392e2d;box-shadow:0 4px 0 #392e2d,0 6px 14px #0006;border-radius:999px;padding:10px 20px;font-weight:900;font-size:clamp(16px,3vh,28px);white-space:nowrap;display:none;word-break:keep-all}.coach.show{display:block;animation:coach-bob 1.1s ease-in-out infinite alternate}@keyframes coach-bob{to{transform:translateX(-50%) translateY(-6px)}}
     .photo-pet{position:absolute;display:none;width:calc(var(--pw,39%)*var(--k,1));height:calc(var(--ph,24%)*var(--k,1));object-fit:contain;object-position:center bottom;left:-18%;bottom:14%;transform:translateX(-50%);z-index:55;pointer-events:none;filter:drop-shadow(0 4px 2px #432b2344)}
     .pet-bubble{position:absolute;transform:translate(-50%,0);white-space:nowrap;background:#fff7dc;border:3px solid #4e3933;border-radius:18px;padding:3px 9px;font-weight:900;font-size:clamp(9px,1.5vh,15px);z-index:56;pointer-events:none;opacity:0;transition:.15s}.pet-bubble.show{opacity:1}
     .photo-pet.draggable:hover{filter:brightness(1.1) drop-shadow(0 4px 2px #432b2344)}.photo-pet.tapped{animation:pet-wiggle .4s ease-out}@keyframes pet-wiggle{0%{rotate:0deg}20%{rotate:-8deg}50%{rotate:7deg}80%{rotate:-3deg}100%{rotate:0deg}}
     .photo-pet.draggable{cursor:grab}.photo-pet.dragging{cursor:grabbing;filter:drop-shadow(0 10px 4px #432b2366)}
-    .shutter{--heat:0;position:absolute;right:3%;bottom:4%;z-index:30;--sb:clamp(66px,11vh,116px);width:var(--sb);height:var(--sb);min-width:var(--sb);min-height:var(--sb);aspect-ratio:1;padding:0;border-radius:50%;border:8px solid color-mix(in srgb,#fff calc((1 - var(--heat))*100%),#e5122d);background:var(--red);box-shadow:0 0 0 5px #633f38,0 8px 0 #3c2f2b,0 0 calc(var(--heat)*26px) calc(var(--heat)*8px) #e5122d99;cursor:pointer;display:grid;place-items:center;color:white;font-size:clamp(26px,4.5vh,54px);touch-action:manipulation}.shutter:active{transform:translateY(6px);box-shadow:0 0 0 5px #633f38,0 2px 0 #3c2f2b}
+    .shutter{--heat:0;position:absolute;right:3%;bottom:4%;z-index:30;--sb:clamp(66px,11vh,116px);width:var(--sb);height:var(--sb);min-width:var(--sb);min-height:var(--sb);aspect-ratio:1;padding:0;border-radius:50%;border:8px solid color-mix(in srgb,#fff calc((1 - var(--heat))*100%),#e5122d);background:var(--red);box-shadow:0 0 0 5px #633f38,0 8px 0 #3c2f2b,0 0 calc(var(--heat)*26px) calc(var(--heat)*8px) #e5122d99;cursor:pointer;display:grid;place-items:center;color:white;font-size:clamp(26px,4.5vh,54px);touch-action:manipulation}.shutter[data-hint]:after{content:attr(data-hint);position:absolute;bottom:calc(100% + 16px);right:0;white-space:nowrap;background:#fff7dc;color:#4e3933;border:3px solid #4e3933;border-radius:14px;padding:3px 10px;font-size:clamp(12px,1.9vh,16px);font-weight:900;pointer-events:none}.shutter:active{transform:translateY(6px);box-shadow:0 0 0 5px #633f38,0 2px 0 #3c2f2b}
     .flash{position:absolute;inset:0;background:white;z-index:100;pointer-events:none;opacity:0}.flash.fire{animation:flash .42s}@keyframes flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
     .toast{position:absolute;left:50%;top:15%;transform:translate(-50%,-20px);background:#392e2dd9;color:white;border-radius:999px;padding:9px 18px;font-weight:900;font-size:clamp(11px,1.8vh,19px);z-index:40;opacity:0;transition:.2s;white-space:nowrap;pointer-events:none;word-break:keep-all}.toast.show{opacity:1;transform:translate(-50%,0)}.toast.hot{background:#d84d44}
     .mission-intro{position:absolute;inset:0;z-index:110;background:#2b2222b8;display:none;place-items:center;padding:5%}.mission-intro.show{display:grid}.mission-card{width:min(540px,90%);background:#fff9e9;border:6px solid var(--red);border-radius:24px;padding:5%;text-align:center;box-shadow:0 16px 0 #7b3f39}
@@ -144,7 +142,7 @@
     @media(max-aspect-ratio:1.25/1){.complete-hero .complete-btn{height:7.2%}.complete-hero #completeAlbum{left:10.6%;top:77.9%;width:78.4%}.complete-hero #completeAgain{left:12.5%;top:86.7%;width:74.6%;height:6.9%}}
     .complete-card{width:min(520px,92%);background:#fff7df;border:8px solid #f8d28a;box-shadow:0 0 0 4px #963d36,0 18px 0 #8f3f39;border-radius:20px;padding:8% 6%;text-align:center}.complete-emoji{font-size:clamp(48px,9vh,90px)}.complete-card h2{font-family:'Gaegu';font-size:clamp(40px,7vh,72px);margin:.1em 0;color:#d84d44;line-height:1}.complete-card p{font-weight:800;margin:6px 0 20px;color:#76584e;word-break:keep-all}.complete-actions{display:flex;flex-direction:column;gap:10px;align-items:center}
     /* 가로 화면은 폭이 넓어 같은 높이 비율이면 작아 보인다 → 가족 66%, 동물도 같은 비율(×1.14)로 키운다 */
-    @media(min-aspect-ratio:1.2501/1){.photo-pet{--pw:44.5%;--ph:27.4%}}
+    @media(min-aspect-ratio:1.2501/1){.photo-pet{--pw:44.5%;--ph:27.4%}.family-member{height:78%}}
     /* 세로 화면(폰·태블릿): 가족 크기를 동일하게 고정 → 조건 판정과 시뮬레이션 기준(SIZE)이 일치 */
     @media(max-aspect-ratio:1.25/1){.game-shell{width:100vw;height:100vh}.album{width:86%}.gallery-grid{grid-template-columns:repeat(2,1fr)}
       .photo-pet{--pw:31%;--ph:19%}   /* 가족을 줄인 비율(×0.79)에 맞춰 동물도 작게 */
@@ -154,7 +152,7 @@
       .game-shell{min-height:0}.title-screen{padding:5vh 5vw}.album{width:90%;height:76%;max-height:680px;border-radius:13px 30px 30px 13px;transform:rotate(-1deg)}.album:before{left:18px;width:8px}.cover-card{width:76%;height:76%;padding:8% 4%;border-width:7px}.camera-mark{font-size:34px}h1{font-size:48px;line-height:.84;letter-spacing:-.08em;margin:2px 0 8px}.subtitle{font-size:14px;line-height:1.3;margin:0 0 10px}.start-btn{font-size:18px;padding:.7em 1.35em}.how{left:8%;right:8%;text-align:center;font-size:11px}
       .difficulty{gap:4px;margin:0 0 12px}.difficulty button{padding:6px 7px;font-size:10px}.title-sub{margin-top:8px;gap:5px}.title-sub button,.title-sub span{font-size:10px;padding:4px 8px}
       .hud{height:9%;padding:0 3%}.timer{width:56px;border-width:5px;font-size:24px}.stage{background-position:center}.level-badge{font-size:10px;padding:3px 6px;margin-right:0}.gallery-btn{padding:4px 8px;font-size:11px;white-space:nowrap}.hud-left{gap:3px;min-width:0}   /* 390px 이하 폰에서 '앨범' 이 두 줄로 꺾이던 문제 */
-      .cond{padding:4px 6px;font-size:12px;gap:4px}.toast{font-size:13px;padding:7px 14px;top:14%}.coach{bottom:2%;left:40%;font-size:13px}
+      .cond{padding:4px 6px;font-size:12px;gap:4px}.toast{font-size:13px;padding:7px 14px;top:14%}.coach{top:11%;left:50%;font-size:16px;white-space:normal;width:max-content;max-width:90%;text-align:center}
       .result-screen{padding:1.5vh 3vw}.result-comment{font-size:13px;min-height:2.4em}
       .gallery-screen{padding:5%}.gallery-head{align-items:flex-start}.gallery-head h2{font-size:34px;line-height:.9;max-width:66%}.close-gallery{font-size:12px;padding:8px 11px}.gallery-copy{font-size:12px;margin:10px 0 14px}.gallery-grid{gap:12px}
     }
@@ -164,7 +162,7 @@
 <main id="app"><section class="game-shell">
   <section id="title" class="screen title-screen active">
     <div class="hero"><picture><source media="(max-aspect-ratio:1.25/1)" srcset="assets/main/home-portrait.jpg"><img src="assets/main/home-landscape.jpg" alt="찰칵! 우리 가족 — 벚꽃 공원에서 포즈를 취한 가족"></picture>
-      <i class="title-cover" aria-hidden="true"></i><div class="difficulty" aria-label="난이도 선택"><button data-difficulty="easy">편안하게<small>사고 늦게</small></button><button data-difficulty="normal">보통<small>사고 적당히</small></button><button class="selected" data-difficulty="chaos">대환장<small>사고 폭발</small></button></div>
+      <div class="difficulty" aria-label="난이도 선택"><button data-difficulty="easy">편안하게<small>사고 늦게</small></button><button data-difficulty="normal">보통<small>사고 적당히</small></button><button class="selected" data-difficulty="chaos">대환장<small>사고 폭발</small></button></div>
       <button id="startBtn" class="start-btn">가족사진 찍기</button><button id="titleAlbum" class="open-gallery">가족 앨범</button><button id="titleRestart">처음부터</button></div>
   </section>
   <section id="game" class="screen game-screen">
@@ -180,7 +178,7 @@
       <div id="coach" class="coach"></div>
       <button id="shutter" class="shutter" aria-label="사진 촬영">●</button><div id="toast" class="toast"></div>
       <div id="gameMenu" class="mission-intro"><div class="mission-card" style="position:relative"><button id="menuClose" aria-label="닫기" style="position:absolute;top:8px;right:10px;width:36px;height:36px;border:0;border-radius:50%;background:#f3e3c3;color:#633f38;font-size:20px;font-weight:900;cursor:pointer;line-height:1">✕</button><h3>홈으로 갈까요?</h3><div class="result-actions" style="position:static;background:none;padding:6px 0 0"><button id="menuHome" class="next-btn sub-btn">홈으로</button></div></div></div>
-      <div id="missionIntro" class="mission-intro"><div class="mission-card"><div id="missionKicker" class="mission-kicker">거실 · 사진 1/3</div><h3 id="missionTitle">첫 가족사진</h3><ul id="missionConds" class="cond-list"></ul><p class="mission-tip">조건을 맞추면 8초 대환장 타임! 언제 찍을지는 내 마음</p><button id="missionStart" class="start-btn">연출 시작</button></div></div>
+      <div id="missionIntro" class="mission-intro"><div class="mission-card"><div id="missionKicker" class="mission-kicker">거실 · 사진 1/3</div><h3 id="missionTitle">첫 가족사진</h3><ul id="missionConds" class="cond-list"></ul><p class="mission-tip">조건을 맞추면 8초 대환장 타임! 셔터를 안 눌러도 8초 뒤 자동 촬영, 원하는 순간에 누르면 그 장면이 찍혀요</p><button id="missionStart" class="start-btn">연출 시작</button></div></div>
     </div>
   </section>
   <section id="result" class="screen result-screen"><div class="result-wrap">
@@ -603,7 +601,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function enterLevel(skipBrief){
     {const base=LEVELS[order[currentLevel-1]],kinds=animalsFor(currentLevel);cfg=Object.assign({},base,{chaos:base.chaos.filter(e=>e.kind!=='cat').concat(animalEvents(base,kinds)),rarity:Object.assign({},base.rarity,{legend:kinds.length?460:99999})})}phase='briefing';S={fired:[],pending:[],timers:[],prev:[],touched:false,metSince:0,lastRelease:0};drag=null;show('game');
     $('#levelBadge').textContent=(innerWidth<=380?'':cfg.scene+' ')+currentLevel+'/'+LEVELS.length;   /* 좁은 폰(≤380px)은 장면 이름을 빼서 타이머와 겹치지 않게 */$('#stage').style.backgroundImage=`url('${bgFor(cfg)}')`;fitBgY();
-    setupPets();$('#bigCount').classList.remove('show');setCoach('');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
+    setupPets();$('#bigCount').classList.remove('show');setCoach('');$('#shutter').removeAttribute('data-hint');$('#timer').textContent='📷';$('#timer').classList.remove('danger');$('#shutter').style.setProperty('--heat',0);
     $('#condBar').innerHTML='';layoutStart();
     $('#missionKicker').textContent=levelKicker();$('#missionTitle').textContent=cfg.title;$('#missionConds').innerHTML=cfg.conds.map((c,i)=>`<li><b>${i+1}</b>${c.label}</li>`).join('');
     renderConds(evaluateConditions(cfg,measure(),stageAspect()),true);
@@ -621,7 +619,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function beginStaging(){$('#missionIntro').classList.remove('show');phase='staging';const t=now();S.stagingStart=t;S.lastRelease=t;S.metSince=0;S.touched=false;S.countShown=-1;
     setCoach(currentLevel===1?'끌어서 옮기고, 톡 하면 포즈가 바뀌어요 👆':cfg.conds.some(c=>c.type==='special')?'한 명을 두 번 톡! 특수 자세가 나와요':'');sfx('go')}
   function startReady(){phase='ready';S.readyUntil=now()+READY_NOTICE;setCoach('');toast('8초 동안 가족이 움직여요! 원할 때 찰칵!',true)}
-  function startChaos(auto){phase='chaos';S.chaosStart=now();S.rem=CHAOS_SECONDS;S.fired=[];S.pending=buildEvents(cfg,difficulty,(Math.random()*1e9)|0);S.timers=[];S.shown=0;S.cat=null;S.boar=null;planBoar();setCoach('');
+  function startChaos(auto){phase='chaos';S.chaosStart=now();S.rem=CHAOS_SECONDS;S.fired=[];S.pending=buildEvents(cfg,difficulty,(Math.random()*1e9)|0);S.timers=[];S.shown=0;S.cat=null;S.boar=null;planBoar();setCoach('안 눌러도 자동 촬영! 웃긴 순간에 누르면 더 좋아요');$('#shutter').dataset.hint='자동 촬영 중';
     if(auto)toast('가족이 지루해해요!',true);$('#timer').classList.add('danger')}
   function releaseDrag(){if(!drag)return;drag.m.classList.remove('dragging');applyDepth(drag.m);drag=null}
 
@@ -794,7 +792,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
     phase='capture';S.timers=[];S.pending=[];if(drag){drag.m.classList.remove('dragging');drag=null}
     const firedKinds=new Set(S.fired.filter(f=>f.ev.kind==='cat').map(f=>f.ev.animal||'cat')),animal=props.map(p=>p.kind).find(k=>firedKinds.has(k));   /* 사진에 보이는 동물 중 실제로 달려온 동물(고양이/강아지)로 제목을 정한다 */
     const res=scoreSnapshot(cfg,ms,A,{catVisible:!!animal,animal,boarVisible:props.some(p=>p.kind==='boar'&&p.box.cx>0&&p.box.cx<100)});
-    $('#bigCount').classList.remove('show');setCoach('');$('#timer').classList.remove('danger');
+    $('#bigCount').classList.remove('show');setCoach('');$('#shutter').removeAttribute('data-hint');$('#timer').classList.remove('danger');
     const t=makeTitle(res,roundNo++);
     const isBest=res.total>best;if(isBest){best=res.total;store.set(KEY.best,best);$('#best').textContent=best.toLocaleString()}
     const record={version:2,score:res.total,scoreParts:{comp:res.comp,moment:res.moment,chaos:res.chaos},rarity:res.rarity,events:res.events,title:t.title,caption:t.title,comment:t.comment,compRate:res.compRate,staged:res.staged,remaining:+T.toFixed(2),members,props,level:currentLevel,scene:cfg.scene,bg:bgFor(cfg),sticker:RARITY[res.rarity].icon+' '+RARITY[res.rarity].label,stageRatio:stage.clientWidth/stage.clientHeight,stamp:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}),difficulty};
@@ -871,7 +869,7 @@ if(typeof module!=='undefined')module.exports={BOAR_SWEEP,freeSpot,footBlocked,B
   function zoomPhoto(r){const box=$('#zoomBox');box.innerHTML='';const wrap=document.createElement('div');wrap.className='zoom-photo';const scene=document.createElement('div');scene.className='photo-scene';scene.style.setProperty('--r',String(r.stageRatio||.5));scene.style.backgroundImage=`url('${r.bg||'assets/living-room.png'}')`;scenePhoto(scene,r);renderProps(scene,r);const cap=scene.querySelector('.photo-caption');if(cap)cap.classList.add('in');wrap.appendChild(scene);
     const rar=r.version===2&&RARITY[r.rarity];const foot=document.createElement('div');foot.className='zoom-foot';foot.textContent=`${rar?rar.icon+' '+rar.label+' · ':''}${r.scene||'거실'} ${r.level||1}/${LEVELS.length} · ${Number(r.score||0).toLocaleString()}점`;wrap.appendChild(foot);box.appendChild(wrap);box.classList.add('open');wrap.style.setProperty('--r',String(r.stageRatio||.5))}
   function closeZoom(){$('#zoomBox').classList.remove('open')}
-  function abortRound(){phase='idle';S.timers=[];S.pending=[];drag=null;pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('')}
+  function abortRound(){phase='idle';S.timers=[];S.pending=[];drag=null;pet.style.display='none';$('#bigCount').classList.remove('show');setCoach('');$('#shutter').removeAttribute('data-hint')}
   function openGallery(){galleryReturn=screens.result.classList.contains('active')?'result':screens.game.classList.contains('active')?'game':screens.complete.classList.contains('active')?'complete':'title';if(galleryReturn==='game')abortRound();renderGallery();show('gallery')}
   function closeGallery(){if(galleryReturn==='result')show('result');else if(galleryReturn==='game')enterLevel();else show(galleryReturn)}
   function advance(){resultTimers.forEach(clearTimeout);if(currentLevel>=LEVELS.length){store.set(KEY.level,'1');currentLevel=1;show('complete');return}currentLevel++;store.set(KEY.level,String(currentLevel));enterLevel()}
